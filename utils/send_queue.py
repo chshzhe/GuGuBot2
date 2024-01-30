@@ -9,7 +9,7 @@ async def send_message():
         message, event, bot = message_queue.get()
         logger.debug(f"发送消息：{message}")
         await bot.send(event, message)
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(0.6)
 
 
 async def message_sender():
@@ -17,7 +17,7 @@ async def message_sender():
         if not message_queue.empty():
             await send_message()
         else:
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(0.1)
 
 
 message_queue = Queue()
