@@ -1,16 +1,4 @@
-import asyncio
-import random
-
-import nonebot
-from nonebot import on_startswith
-from nonebot.typing import T_State
-from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
-
-# from configs.config import BOT_NAME
-# from utils.data import BOOK
-
-BOT_NAME = "咕咕"
-BOOK = [
+[
   "请教你的妈妈",
   "相信你的直觉",
   "重新考虑",
@@ -232,7 +220,7 @@ BOOK = [
   "从来没有",
   "去尝试",
   "尚待时日",
-  "不雅忽略身边的人",
+  "不要忽略身边的人",
   "制订了一个新计划",
   "没有更好的选择",
   "不会后悔的",
@@ -323,25 +311,3 @@ BOOK = [
   "阻止",
   "取决于你的选择"
 ]
-__plugin_info__ = {
-    "name": "答案之书",
-    "description": "通过马纳姆效应解决历史难题",
-    "usage": {
-        f"{BOT_NAME}，……": "告诉你如何解决",
-    },
-    "author": "厨师长",
-    "version": "1.0",
-    "permission": 2,
-}
-
-AnswerBook = on_startswith((f"{BOT_NAME}，", f"{BOT_NAME} ", f"{BOT_NAME},", f"{BOT_NAME}.", f"{BOT_NAME}。"),
-                           permission=GROUP,
-                           priority=2,
-                           )
-
-
-@AnswerBook.handle()
-async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
-    # 延时 0.5s
-    await asyncio.sleep(1)
-    await AnswerBook.finish(Message(f"[CQ:reply,id={event.message_id}]{random.choice(BOOK)}"))
