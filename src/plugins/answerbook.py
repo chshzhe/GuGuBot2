@@ -26,6 +26,6 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
     answer = random.choice(BOOK)
     message_queue.put((Message(f"[CQ:reply,id={event.message_id}]{answer}"), event, bot))
     logger.debug(f"进入队列：{answer}")
-    logger.success(f"用户：{event.user_id}，在群：{event.group_id}，使用了答案之书")
+    logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了答案之书")
 
     await AnswerBook.finish()

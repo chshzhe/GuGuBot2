@@ -40,5 +40,5 @@ async def handle_receive(bot: Bot, event: Event, state: T_State):
 
     message_queue.put((Message(message), event, bot))
     logger.debug(f"进入队列：{message}")
-    logger.success(f"用户：{event.user_id}，在群：{event.group_id}，对bot使用了戳一戳")
+    logger.info(f"用户：{event.user_id}，在群：{event.group_id}，对bot使用了戳一戳")
     await Poke.finish()

@@ -29,7 +29,7 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
     morning = random.choice(MORNING)
     message_queue.put((Message(f"[CQ:reply,id={event.message_id}]{morning}"), event, bot))
     logger.debug(f"进入队列：{morning}")
-    logger.success(f"用户：{event.user_id}，在群：{event.group_id}，使用了早安")
+    logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了早安")
 
     await Morning.finish()
 
@@ -39,6 +39,6 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
     night = random.choice(NIGHT)
     message_queue.put((Message(f"[CQ:reply,id={event.message_id}]{night}"), event, bot))
     logger.debug(f"进入队列：{night}")
-    logger.success(f"用户：{event.user_id}，在群：{event.group_id}，使用了晚安")
+    logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了晚安")
 
     await Morning.finish()
