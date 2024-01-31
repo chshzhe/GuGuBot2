@@ -1,9 +1,6 @@
-import random
-from typing import Optional, List
-
+from typing import Optional
 import httpx
 from nonebot import on_startswith, logger
-from nonebot.params import CommandArg
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.typing import T_State
 
@@ -35,9 +32,8 @@ async def declaration() -> Optional[str]:
 
 @Declaration.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
-    # sender = CommandArg()
     sender = event.raw_message.replace("表白", "")
-    if sender != "" and sender.isspace()==False:
+    if sender != "" and sender.isspace() == False:
         declaration_str = await declaration()
         if declaration_str is None:
             message = f"咕咕出错啦，请稍后再试"
@@ -53,8 +49,3 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
         logger.debug(f"进入队列：{message}")
         logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了表白，没有提供表白对象")
         await Declaration.reject()
-
-
-
-
-
