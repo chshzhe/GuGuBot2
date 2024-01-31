@@ -11,13 +11,7 @@ __plugin_name__ = "一声问候"
 __plugin_usage__ = f"""早安晚安捏~
 早安/晚安：来自{BOT_NAME}的问候
 """
-special_format: str = (
-    "<g>{time:%m-%d %H:%M:%S.%f}</g> "
-    "[<lvl>{level}</lvl>] "
-    "<c><u>{name}</u></c> | "
-    "<c>{function}:{line}</c>| "
-    "{message}"
-)
+
 
 Morning = on_startswith((f"早安"),
                         permission=GROUP,
@@ -32,10 +26,9 @@ Night = on_startswith((f"晚安"),
 
 @Morning.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
-    # await AnswerBook.send(Message(f"[CQ:reply,id={event.message_id}]{random.choice(BOOK)}"))
     morning = random.choice(MORNING)
     message_queue.put((Message(f"[CQ:reply,id={event.message_id}]{morning}"), event, bot))
-    logger.debug(f"进入队列：{morning}", format=special_format)
+    logger.debug(f"进入队列：{morning}")
     logger.success(f"用户：{event.user_id}，在群：{event.group_id}，使用了早安")
 
     await Morning.finish()
@@ -43,10 +36,9 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
 
 @Night.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
-    # await AnswerBook.send(Message(f"[CQ:reply,id={event.message_id}]{random.choice(BOOK)}"))
     night = random.choice(NIGHT)
     message_queue.put((Message(f"[CQ:reply,id={event.message_id}]{night}"), event, bot))
-    logger.debug(f"进入队列：{night}", format=special_format)
+    logger.debug(f"进入队列：{night}")
     logger.success(f"用户：{event.user_id}，在群：{event.group_id}，使用了晚安")
 
     await Morning.finish()

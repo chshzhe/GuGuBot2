@@ -1,0 +1,39 @@
+from random import random, choice
+
+from nonebot import on_notice
+from nonebot.typing import T_State
+from nonebot.adapters.onebot.v11 import Bot, Event, Message, PokeNotifyEvent
+from nonebot.log import logger
+from configs.config import BOT_NAME
+from utils.send_queue import message_queue
+
+__plugin_name__ = "戳一戳"
+__plugin_usage__ = f"""戳戳你的~
+大概是bot被戳了就会反戳你一下，说不定还有彩蛋呢~
+"""
+
+
+async def __poke_notify__(bot: Bot, event: Event) -> bool:
+    if isinstance(event, PokeNotifyEvent) and event.is_tome():
+        return True
+    return False
+
+
+Poke = on_notice(__poke_notify__, priority=1, block=False, )
+
+
+@Poke.handle()
+async def handle_receive(bot: Bot, event: Event, state: T_State):
+    if random() < 0.6:
+        message = choice([
+            "不准戳不准戳！！！",
+            "不要戳啦！！呜呜呜",
+            f"再戳{BOT_NAME}就生气啦！",
+            "真的有那么好戳嘛...",
+            "嘤嘤嘤，被戳痛了呜呜呜"])
+    else:
+        message = Message(f"[CQ:poke,qq={event.user_id}]")
+    message_queue.put((Message(message), event, bot))
+    logger.debug(f"进入队列：{message}")
+    logger.success(f"用户：{event.user_id}，在群：{event.group_id}，对bot使用了戳一戳")
+    await Poke.finish()
