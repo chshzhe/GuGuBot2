@@ -24,15 +24,20 @@ Poke = on_notice(__poke_notify__, priority=1, block=False, )
 
 @Poke.handle()
 async def handle_receive(bot: Bot, event: Event, state: T_State):
-    if random() < 0.6:
+    if random() < 0.3:
         message = choice([
             "不准戳不准戳！！！",
             "不要戳啦！！呜呜呜",
             f"再戳{BOT_NAME}就生气啦！",
             "真的有那么好戳嘛...",
-            "嘤嘤嘤，被戳痛了呜呜呜"])
+            "嘤嘤嘤，被戳痛了呜呜呜",
+            "不可以戳这里！",
+            "再戳会坏掉的QAQ",
+            # "恕我突兀，你是否知晓「纯美」的女神伊德莉拉"
+        ])
     else:
         message = Message(f"[CQ:poke,qq={event.user_id}]")
+
     message_queue.put((Message(message), event, bot))
     logger.debug(f"进入队列：{message}")
     logger.success(f"用户：{event.user_id}，在群：{event.group_id}，对bot使用了戳一戳")
