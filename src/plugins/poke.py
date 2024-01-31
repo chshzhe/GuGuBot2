@@ -1,5 +1,4 @@
 from random import random, choice
-
 from nonebot import on_notice
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import Bot, Event, Message, PokeNotifyEvent

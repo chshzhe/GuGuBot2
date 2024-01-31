@@ -1,6 +1,4 @@
-import random
 from nonebot import on_fullmatch
-from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger

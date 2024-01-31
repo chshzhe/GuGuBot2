@@ -3,7 +3,6 @@ from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger
 from configs.config import BOT_NAME
-from utils.send_queue import message_queue
 
 __plugin_name__ = "接个龙龙"
 __plugin_usage__ = f"""什么逆天功能~

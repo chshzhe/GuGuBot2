@@ -1,9 +1,9 @@
-
-from nonebot import on_startswith, logger, on_command
-from nonebot.typing import T_State
-from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 import random
 import httpx
+from nonebot import on_startswith, logger
+from nonebot.typing import T_State
+from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
+from utils.send_queue import message_queue
 
 __plugin_name__ = "对联"
 __plugin_usage__ = f"""咕咕给您生成对联
@@ -11,11 +11,7 @@ __plugin_usage__ = f"""咕咕给您生成对联
 对对联 <上联>：随机生成对应的下联
 """
 
-
-from utils.send_queue import message_queue
-
 Couplet = on_startswith(("对联 ", "对对联 "), permission=GROUP, priority=15)
-
 
 url_base = 'https://seq2seq-couplet-model.rssbrain.com/v0.2/couplet/'
 
@@ -51,5 +47,5 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
 
     message_queue.put((Message(message), event, bot))
     logger.debug(f"进入队列：{message}")
-    logger.info(f"用户：{event.user_id}，在群：{event.group_id}，对bot使用了对联")
+    logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了对联")
     await Couplet.finish()
