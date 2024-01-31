@@ -7,7 +7,7 @@ from nonebot import logger
 async def send_message():
     while not message_queue.empty():
         message, event, bot = message_queue.get()
-        logger.debug(f"发送消息：{message}")
+        logger.success(f"发送消息：{message}")
         await bot.send(event, message)
         await asyncio.sleep(0.6)
 
