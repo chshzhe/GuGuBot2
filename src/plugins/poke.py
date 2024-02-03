@@ -35,7 +35,10 @@ async def handle_receive(bot: Bot, event: Event, state: T_State):
             # "恕我突兀，你是否知晓「纯美」的女神伊德莉拉"
         ])
     else:
-        message = Message(f"[CQ:poke,qq={event.user_id}]")
+        # message = Message(f"[CQ:poke,qq={event.user_id}]")    #go-cqhttp
+        # message = Message(f"[CQ:poke,type=1,id={event.user_id}]")     #Shamrock
+        # message = Message(f"[CQ:touch,id={event.user_id}]")  # Shamrock
+        message = Message(f"戳不出来啦！")
 
     message_queue.put((Message(message), event, bot))
     logger.debug(f"进入队列：{message}")
