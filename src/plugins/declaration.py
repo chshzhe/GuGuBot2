@@ -13,7 +13,8 @@ __plugin_usage__ = f"""咕咕帮您表白~
 
 Declaration = on_startswith("表白", permission=GROUP, priority=16)
 
-url = 'https://api.vvhan.com/api/love'
+# url = 'https://api.vvhan.com/api/love'
+url = "https://api.lovelive.tools/api/SweetNothings"
 
 
 async def declaration() -> Optional[str]:
@@ -33,7 +34,7 @@ async def declaration() -> Optional[str]:
 @Declaration.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
     sender = event.raw_message.replace("表白", "")
-    if sender != "" and sender.isspace() == False:
+    if sender != "" and not sender.isspace():
         declaration_str = await declaration()
         if declaration_str is None:
             message = f"咕咕出错啦，请稍后再试"
