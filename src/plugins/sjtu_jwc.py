@@ -1,11 +1,9 @@
 from typing import Dict, List
-
 import httpx
-import nonebot
+import lxml
 from bs4 import BeautifulSoup
-from nonebot import on_startswith, require
-from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, GroupMessageEvent, PrivateMessageEvent, \
-    Message
+from nonebot import on_startswith
+from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot import get_bot
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
@@ -43,7 +41,6 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
         message_queue.put((Message(msg), event, bot))
         logger.debug(f"进入队列：{msg}")
         logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了教务处通知推送")
-
         await Jwc_message.finish()
 
 
@@ -64,8 +61,10 @@ async def check_update():
             bot = get_bot()
             for group in PREVIEW_GROUP:
                 message_queue.put((Message(news_msg), group, bot, "group"))
-                logger.debug(f"进入队列：{news_msg}")
+                logger.debug(f"进入群发队列：{news_msg}")
                 logger.info(f"群{group}，自动发送教务处通知推送")
+                message_queue.put((Message(f"群{group}教务处通知推送"), 1299946476, bot, "private"))
+                logger.debug(f"进入队列：个人测试")
 
 
 def _url_match(new: dict, cache: list) -> bool:
