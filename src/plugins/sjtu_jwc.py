@@ -14,6 +14,7 @@ from utils.send_queue import message_queue
 news_list = []
 
 jwc_news_url = ["https://jwc.sjtu.edu.cn/xwtg/tztg.htm",
+                "https://jwc.sjtu.edu.cn/index/mxxsdtz.htm"
                 ]
 
 __plugin_name__ = "教务处通知推送"
@@ -94,7 +95,9 @@ async def get_news_list() -> List[Dict[str, str]]:
                 day = str(time.h2.contents[0])
                 time_str = month.replace('.', '-') + '-' + day
                 fetched_news.append({"title": title, "link": link, "description": description, 'time': time_str})
-            logger.debug(f"Successfully fetched {len(fetched_news)} news.")
+        fetched_news = [i for n, i in enumerate(fetched_news) if i not in fetched_news[n + 1:]]
+        fetched_news.sort(key=lambda x: x["time"], reverse=True)
+        logger.debug(f"Successfully fetched {len(fetched_news)} news.")
         return fetched_news
     except Exception as e:
         logger.error("获取教务处新闻列表失败，错误信息：", e)
