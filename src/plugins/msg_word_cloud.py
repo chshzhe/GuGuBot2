@@ -7,7 +7,7 @@ from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger
 from utils.db import db
-from configs.path_config import FONT_PATH
+from configs.path_config import FONT_PATH, TEMP_PATH
 from utils.send_queue import message_queue
 
 __plugin_name__ = "词云"
@@ -96,4 +96,4 @@ async def generate_picture(text: str):
                    mode="RGBA",
                    background_color=None
                    ).generate(text)
-    wc.to_file("TEMP_PATH" + "wordcloud.png")
+    wc.to_file(TEMP_PATH + "wordcloud.png")
