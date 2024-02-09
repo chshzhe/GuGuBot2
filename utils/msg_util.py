@@ -1,12 +1,17 @@
 ## Author HibiKier/zhenxun_bot
 ## Edit by FYWinds
 import os
+
+import requests
 import ujson
 from io import BytesIO
 from typing import Union, Optional
+
+from nonebot import logger
 from nonebot.adapters.onebot.v11.message import MessageSegment
 from configs.path_config import IMAGE_PATH, VOICE_PATH
-
+from configs.config import HTTP_API_URL
+endpoint = '/upload_file'
 
 def image(
         img_file: str = None,
@@ -105,3 +110,21 @@ def music_163(id_: int) -> MessageSegment:
 
 def reply(id_: int) -> MessageSegment:
     return MessageSegment.reply(id_)
+
+
+async def image_for_shamrock(path: str, filename: str) -> Union[MessageSegment,None]:
+    if os.path.exists(path + filename):
+        try:
+            with open(path + filename, 'rb') as f:
+                response = requests.post(HTTP_API_URL + endpoint, files={'file': f}).json()
+            if response['status'] == 'ok':
+                temp_name = response['data']['file']
+                md5 = response['data']['md5']
+                logger.info(f"图片{filename}上传缓存成功，返回的文件名为{md5}")
+                return MessageSegment.image("file://"+temp_name)
+            else:
+                logger.error(f"图片上传缓存失败，返回的信息为{response}")
+                return None
+        except Exception as e:
+            logger.error(f"图片上传缓存失败，错误信息为{e}")
+            return None

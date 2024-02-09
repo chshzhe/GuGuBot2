@@ -8,7 +8,7 @@ from nonebot.adapters.onebot.v11 import Event
 async def send_message():
     while not message_queue.empty():
         try:
-            message, event, bot, *args = message_queue.get()
+            (message, event, bot, *args) = message_queue.get()
             if isinstance(event, Event):
                 await bot.send(event, message)
                 logger.success(f"发送消息：{message}")

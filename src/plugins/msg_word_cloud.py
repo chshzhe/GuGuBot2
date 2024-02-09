@@ -1,13 +1,19 @@
+import datetime
 import re
+from typing import List, Dict
+
 from wordcloud import WordCloud
 import jieba
+import jieba.analyse
+from emoji import replace_emoji
 from nonebot import on_command
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
-from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
+from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, MessageSegment
 from nonebot.log import logger
 from utils.db import db
 from configs.path_config import FONT_PATH, TEMP_PATH
+from utils.msg_util import text, image_for_shamrock
 from utils.send_queue import message_queue
 
 __plugin_name__ = "词云"
@@ -33,67 +39,115 @@ MsgWordCloud = on_command("-wc",
                           priority=18,
                           )
 
+select = ["E", "W", "F", "UP", "C", "T", "PYI", "Q"]
+ignore = ["E402", "E501", "E711", "C901", "UP037"]
+
 
 @MsgWordCloud.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State, args=CommandArg()):
     logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了词云生成，参数{args}")
     args = str(args).strip()
-    # 根据参数区分不同的命令逻辑
     if args == "":
         logger.debug(f"wc命令")
         msg = await generate_word_cloud(event.group_id)
-        message_queue.put((Message(msg), event, bot))
-
+        message_queue.put((msg, event, bot))
     elif args == "me":
         logger.debug(f"wcme命令")
         msg = await generate_word_cloud(event.group_id, event.user_id)
-        message_queue.put((Message(msg), event, bot))
-
+        message_queue.put((msg, event, bot))
     else:
         if not str(args).isdigit():
             logger.debug(f"参数错误")
             msg = "参数错误"
-            message_queue.put((Message(msg), event, bot))
-
+            message_queue.put((msg, event, bot))
         else:
             logger.debug(f"-wc {args}命令")
             user_id = int(args)
             msg = await generate_word_cloud(event.group_id, user_id)
-            message_queue.put((Message(msg), event, bot))
+            message_queue.put((msg, event, bot))
 
     await MsgWordCloud.finish()
 
 
-async def generate_word_cloud(group_id: int, user_id: int = None):
+async def generate_word_cloud(group_id: int, user_id: int = None) -> MessageSegment:
     if not db.table_exists(f"msg{group_id}"):
-        return "本群暂无消息记录诶"
+        return text("本群暂无消息记录诶")
     else:
         if user_id:
             data = db.query(f"SELECT message FROM msg{group_id} WHERE user_id = {user_id}")
         else:
-            data = db.query(f"SELECT message FROM msg{group_id}")
+            data = db.query(f"SELECT message FROM msg{group_id} WHERE time > datetime('now', '-1 day')")
         if not data:
-            return "暂无消息记录诶"
+            return text("暂无消息记录诶")
         else:
-            logger.debug(data)
-            string_list = [item[0] for item in data]
-            cleaned_list = [re.sub(r'\[CQ:[^\]]+\]', '', item) for item in string_list]
-            no_empty_lines = [line for line in cleaned_list if line.strip()]
-            result_no_empty = '\n'.join(no_empty_lines)
-            logger.debug(result_no_empty)
-            await generate_picture(result_no_empty)
-            return "正常"
+            frequency = data_filter(data)
+            path = TEMP_PATH
+            file = f"wordcloud_{int(datetime.datetime.now().timestamp())}_{group_id}_{user_id}.png"
+            await generate_picture(frequency, path + file)
+            msg = await image_for_shamrock(path, file)
+            if msg:
+                return msg
+            else:
+                return text("生成词云失败")
 
 
-async def generate_picture(text: str):
-    text = ' '.join(jieba.cut(text))  # 利用jieba进行分词形成列表，将列表里面的词用空格分开并拼成长字符串。
-    logger.debug(text[:4])  # 打印前100个字符
-    logger.debug(text[-4:])  # 打印后100个字符
-    # 生成对象
-    wc = WordCloud(font_path=FONT_PATH + "HYWenHei-85W.otf",
-                   width=800,
-                   height=600,
-                   mode="RGBA",
-                   background_color=None
-                   ).generate(text)
-    wc.to_file(TEMP_PATH + "wordcloud.png")
+async def generate_picture(frequency: Dict[str, float], filename: str):
+    wordcloud_options = {}
+    wordcloud_options.setdefault("font_path", FONT_PATH + "HYWenHei-85W.otf")
+    wordcloud_options.setdefault("width", 800)
+    wordcloud_options.setdefault("height", 600)
+    wordcloud_options.setdefault(
+        "background_color", 'white'
+    )
+    wordcloud = WordCloud(**wordcloud_options)
+    generate_image = wordcloud.generate_from_frequencies(frequency).to_image()
+    generate_image.save(filename, format="PNG")
+
+
+def data_filter(data: List[str]) -> Dict[str, float]:
+    msg_list = [item[0] for item in data]
+    msg_list = [re.sub(r'\[CQ:[^\]]+\]', '', item) for item in msg_list]
+    command_start_list = ['/', '#', '-']
+    command_start = tuple(i for i in command_start_list if i)
+    message = " ".join(m for m in msg_list if not m.startswith(command_start))
+    # 预处理
+    message = pre_precess(message)
+    # 分析消息。分词，并统计词频
+    frequency = analyse_message(message)
+    return frequency
+
+
+def pre_precess(msg: str) -> str:
+    """对消息进行预处理"""
+    # 去除网址
+    # https://stackoverflow.com/a/17773849/9212748
+    url_regex = re.compile(
+        r"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]"
+        r"+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})"
+    )
+    msg = url_regex.sub("", msg)
+
+    # 去除 \u200b
+    msg = re.sub(r"\u200b", "", msg)
+
+    # 去除 emoji
+    # https://github.com/carpedm20/emoji
+    msg = replace_emoji(msg)
+
+    return msg
+
+
+def analyse_message(msg: str) -> Dict[str, float]:
+    """分析消息
+    分词，并统计词频
+    """
+    # 设置停用词表
+    # if plugin_config.wordcloud_stopwords_path:
+    #     jieba.analyse.set_stop_words(plugin_config.wordcloud_stopwords_path)
+    # # 加载用户词典
+    # if plugin_config.wordcloud_userdict_path:
+    #     jieba.load_userdict(str(plugin_config.wordcloud_userdict_path))
+    # 基于 TF-IDF 算法的关键词抽取
+    # 返回所有关键词，因为设置了数量其实也只是 tags[:topK]，不如交给词云库处理
+    words = jieba.analyse.extract_tags(msg, topK=0, withWeight=True)
+    return dict(words)

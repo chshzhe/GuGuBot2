@@ -55,12 +55,17 @@
 
 1. 启动 MuMu12 模拟器，查看 ADB 调试端口， 一般模拟器本体（即多开器内序号0）的端口为 `16384`，多开的模拟器会在此基础上加 `32`，参看 [MuMu模拟器说明文档](https://mumu.163.com/help/20230214/35047_1073151.html)。
 
-2. 按照上述教程连接 adb，在 `shell` 运行，配置端口转发。注意，此时不要运行 Bot 服务。
+2. 按照上述教程连接 adb，在 `CMD` 运行，配置端口转发。端口 `5700` 用于 `Shamrock` 的 `HTTP` 通信，口 `6000` 用于 `WebSocket` 通信。注意，此时不要运行 Bot 服务。
    ```shell
+   adb.exe connect 127.0.0.1:16384
+   adb forward tcp:5700 tcp:5700
    adb forward tcp:6000 tcp:6000
    ```
-   
-3. 重启模拟器，然后依次启动 `LSPatch` 和 `Shamrock` ，然后启动 QQ 客户端。显示以下内容即为配置完成。
+3. 配置 `被动WebSocket地址` 为 `ws://10.0.2.2:6000/onebot/v11/ws/`，其他端口默认，功能模式打开 `强制平板模式`、`消息格式为CQ码`、`被动WebSocket`、`HTTP`、`WebSocket`。可以参考下面配置。
+![端口配置](IMG/img-3.png)
+![功能配置](IMG/img-4.png)
+4. 
+5. 重启模拟器，然后依次启动 `LSPatch` 和 `Shamrock` ，然后启动 QQ 客户端。显示以下内容即为配置完成。
 
    ```log
    [INFO] uvicorn | asgi_send:287| ('127.0.0.1', 9999) - "WebSocket /onebot/v11/ws" [accepted]
