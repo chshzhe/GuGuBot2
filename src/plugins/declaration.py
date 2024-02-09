@@ -20,7 +20,6 @@ Declaration = on_startswith("表白",
                             rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
                             permission=GROUP,
                             priority=16,
-                            expire_time=timedelta(minutes=1)
                             )
 
 # url = 'https://api.vvhan.com/api/love'

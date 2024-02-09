@@ -129,6 +129,7 @@ def pre_precess(msg: str) -> str:
 
     # 去除 \u200b
     msg = re.sub(r"\u200b", "", msg)
+    msg = re.sub(r"&#91;该消息类型不支持查看，请使用QQ最新版本&#93;", "", msg)
 
     # 去除 emoji
     # https://github.com/carpedm20/emoji
