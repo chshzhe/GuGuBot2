@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Optional
 import httpx
 from nonebot import on_startswith, logger

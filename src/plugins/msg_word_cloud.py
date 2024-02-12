@@ -14,6 +14,7 @@ from nonebot.log import logger
 from utils.db import db
 from configs.path_config import FONT_PATH, TEMP_PATH
 from utils.msg_util import text, upload_for_shamrock
+from utils.permission_checker import auth_manager
 from utils.send_queue import message_queue
 
 __plugin_name__ = "词云"
@@ -35,6 +36,7 @@ __default_permission_cn__ = {
 }
 
 MsgWordCloud = on_command("-wc",
+                          rule=auth_manager.get_rule(f"{__plugin_cmd_name__}", "wc"),
                           permission=GROUP,
                           priority=18,
                           )

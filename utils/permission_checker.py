@@ -1,11 +1,15 @@
 import json
-from typing import Any, Union
-from nonebot import logger
-from nonebot.adapters.onebot.v11 import Event, PrivateMessageEvent
+from typing import Any, Union, Dict
+from nonebot import logger, on_command, on_fullmatch
+from nonebot.adapters.onebot.v11 import Event, PrivateMessageEvent, GROUP, MessageEvent, Bot
+from nonebot.params import CommandArg
 from nonebot.permission import Permission
 from nonebot.rule import Rule
 from nonebot.plugin import get_loaded_plugins
+from nonebot.typing import T_State
+
 from configs.path_config import PERMISSION_PATH
+from utils.send_queue import message_queue
 
 """
 {
@@ -31,7 +35,7 @@ class AuthManager:
         self.load_permissions()
         self.default_permissions = {}
 
-    def load_permissions(self):
+    def load_permissions(self) -> None:
         """从 JSON 文件加载权限数据"""
         try:
             with open(self.filepath, "r", encoding="utf-8") as f:
@@ -43,7 +47,7 @@ class AuthManager:
             logger.error(f"权限文件 {self.filepath} 格式错误")
             self.command_permissions = {}
 
-    def save_permissions(self):
+    def save_permissions(self) -> None:
         """将权限数据保存到 JSON 文件"""
         with open(self.filepath, "w", encoding="utf-8") as f:
             json.dump(self.command_permissions, f, ensure_ascii=False, indent=4)
@@ -80,7 +84,8 @@ class AuthManager:
                     cmd_perms = plugin_perms
 
         if isinstance(cmd_perms, list):
-            return user_id in cmd_perms
+            logger.debug(f"群{group_id}用户{user_id}插件{plugin_name}.{command}权限为{cmd_perms}")
+            return int(user_id) in cmd_perms
         logger.debug(f"群{group_id}用户{user_id}插件{plugin_name}.{command}权限为{cmd_perms}")
         return cmd_perms  # If it's a boolean, return it directly
 
@@ -101,7 +106,7 @@ class AuthManager:
 
         return Permission(_permission)
 
-    def load_plugin_default_permissions(self):
+    def load_plugin_default_permissions(self) -> None:
         """加载所有插件的默认权限"""
         loaded_plugins = get_loaded_plugins()
         for plugin in loaded_plugins:
@@ -117,7 +122,7 @@ class AuthManager:
                 self.default_permissions[plugin_name] = default_permission
         logger.info(f"已加载所有插件的默认权限：{self.default_permissions}")
 
-    def update_permission(self, group_id: str, value: Any):
+    def update_permission(self, group_id: str, value: Dict[str, Any]) -> None:
         """更新权限"""
         self.command_permissions[group_id] = value
         self.save_permissions()
@@ -143,3 +148,151 @@ class AuthManager:
 
 
 auth_manager = AuthManager(PERMISSION_PATH)
+
+PM_Command = on_command("-pm",
+                        rule=auth_manager.get_rule("admin"),
+                        permission=GROUP,
+                        priority=6,
+                        block=True,
+                        )
+
+
+@PM_Command.handle()
+async def handle_pm_command(bot: Bot, event: MessageEvent, state: T_State, args=CommandArg()):
+    args = str(args).strip().split()
+    logger.debug(f"收到 -pm 命令：{args}")
+    response_msg = ""
+    if len(args) < 2:  # 检查参数数量
+        response_msg = "命令格式错误，请按照'-pm <插件名称/命令> <动作> <参数>'的格式输入。"
+    else:
+        plugin_or_cmd, action = args[0:2]
+        param = args[2] if len(args) > 2 else None  # 参数可选
+        logger.debug(f"插件/命令：{plugin_or_cmd}，动作：{action}，参数：{param}")
+        group_permissions = auth_manager.command_permissions.get(str(event.group_id), {})
+        if group_permissions is None:
+            logger.warning(f"未找到群 {event.group_id} 的权限设置")
+            response_msg = "未找到群权限设置。"
+        else:
+            for k, v in group_permissions.items():
+                if isinstance(v, dict) and plugin_or_cmd in v:
+                    if isinstance(group_permissions[k][plugin_or_cmd], bool):
+                        if action not in ['on', 'off']:
+                            response_msg = "错误：动作必须是'on'或'off'。"
+                            break
+                        else:
+                            group_permissions[k][plugin_or_cmd] = True if action == 'on' else False
+                            auth_manager.update_permission(str(event.group_id), group_permissions)
+                            response_msg = f"{plugin_or_cmd}→{action}。"
+                            break
+                    elif isinstance(group_permissions[k][plugin_or_cmd], list):
+                        if action not in ['add', 'del']:
+                            response_msg = "错误：动作必须是'add'或'del'。"
+                            break
+                        elif not param or not param.isdigit():
+                            response_msg = "错误：需要一个数字参数。"
+                            break
+                        else:
+                            if action == 'add':
+                                if int(param) not in group_permissions[k][plugin_or_cmd]:
+                                    group_permissions[k][plugin_or_cmd].append(int(param))
+                                    auth_manager.update_permission(str(event.group_id), group_permissions)
+                                else:
+                                    response_msg = f"用户{param}已经在{plugin_or_cmd}了。"
+                                    break
+                            else:
+                                if int(param) in group_permissions[k][plugin_or_cmd]:
+                                    group_permissions[k][plugin_or_cmd].remove(int(param))
+                                    auth_manager.update_permission(str(event.group_id), group_permissions)
+                                else:
+                                    response_msg = f"用户{param}不在{plugin_or_cmd}中。"
+                                    break
+
+                            response_msg = f"用户{param}已{'添加到' if action == 'add' else '从'}{plugin_or_cmd}中{'' if action == 'add' else '删除'}。"
+                            break
+                elif plugin_or_cmd == k:
+                    if isinstance(v, bool):
+                        if action not in ['on', 'off']:
+                            response_msg = "错误：动作必须是'on'或'off'。"
+                            break
+                        else:
+                            group_permissions[k] = True if action == 'on' else False
+                            auth_manager.update_permission(str(event.group_id), group_permissions)
+                            response_msg = f"{plugin_or_cmd}→{action}。"
+                            break
+                    elif isinstance(v, list):
+                        if action not in ['add', 'del']:
+                            response_msg = "错误：动作必须是'add'或'del'。"
+                            break
+                        elif not param or not param.isdigit():
+                            response_msg = "错误：需要一个数字参数。"
+                            break
+                        else:
+                            if action == 'add':
+                                if int(param) not in group_permissions[k]:
+                                    group_permissions[k].append(int(param))
+                                    auth_manager.update_permission(str(event.group_id), group_permissions)
+                                else:
+                                    response_msg = f"用户{param}已经在{plugin_or_cmd}了。"
+                                    break
+                            else:
+                                if int(param) in group_permissions[k]:
+                                    group_permissions[k].remove(int(param))
+                                    auth_manager.update_permission(str(event.group_id), group_permissions)
+                                else:
+                                    response_msg = f"用户{param}不在{plugin_or_cmd}中。"
+                                    break
+
+                            response_msg = f"用户{param}已{'添加到' if action == 'add' else '从'}{plugin_or_cmd}中{'' if action == 'add' else '删除'}。"
+                            break
+                    else:
+                        response_msg = "未知的权限类型。"
+                        break
+                else:
+                    response_msg = "未找到指定的插件或命令。"
+    await message_queue.put((response_msg, event, bot))
+    await PM_Command.finish()
+
+
+PM_Info = on_fullmatch(("-pm help", "-pm status"),
+                       rule=auth_manager.get_rule("admin"),
+                       permission=GROUP,
+                       priority=5,
+                       block=True,
+                       )
+
+@PM_Info.handle()
+async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
+    if event.raw_message == "-pm help":
+        response_msg = """管理插件功能：
+命令：-pm <插件名称/命令> <动作> <参数(可选)>
+==============
+如果插件名称是couplet，也就是对联功能，那-pm couplet on可以打开对联功能，-pm couplet off即为关闭对联功能。
+插件名称/命令列表：
+来点那个：picture
+答案之书：answerbook
+对联：couplet
+表白：declaration
+接龙：dragon
+早安晚安：greeting
+词云：wc
+戳一戳：poke
+教务处公告：jwc
+===============
+任命/取消任命群管：
+-pm admin add/del <qq号>
+===============
+查看当前群权限设置：
+-pm status
+查看帮助：
+-pm help
+        """
+    if event.raw_message == "-pm status":
+        group_permissions = auth_manager.command_permissions.get(str(event.group_id), {})
+        response_msg = "当前群权限设置：\n"
+        for k, v in group_permissions.items():
+            response_msg += f"{k}：{v}\n"
+
+    # else:
+    #     response_msg = f"当前群权限设置：{auth_manager.command_permissions.get(str(event.group_id), '未设置')}"
+    message_queue.put((response_msg, event, bot))
+    await PM_Info.finish()

@@ -33,7 +33,7 @@ async def message_sender():
         if not message_queue.empty():
             await send_message()
         else:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.5)
 
 
 message_queue = Queue()
