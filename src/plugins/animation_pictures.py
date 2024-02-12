@@ -20,22 +20,40 @@ __default_permission__ = False
 Couplet = on_fullmatch("来点那个",
                        rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
                        permission=GROUP,
-                       priority=20
+                       priority=20,
+
                        )
 
-url_base = 'https://api.btstu.cn/sjbz/?lx=dongman&format=json'
+url_1 = 'https://api.btstu.cn/sjbz/?lx=dongman&format=json'
+url_2 = "https://img.xjh.me/random_img.php?type=bg&ctype=acg&return=json"
+url_3 = "https://loli.garden/ranimg/api.php"
 
 
 # find more at https://air.moe/archives/17
 
 async def get_picture() -> MessageSegment:
     try:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(url_3)
+            pic_res = response.url
         async with httpx.AsyncClient() as client:
-            response = await client.get(url_base)
-        url = response.json()["imgurl"]
-        async with httpx.AsyncClient() as client:
-            pic_res = await client.get(url)
-        logger.debug(f"图片url：{url}")
+            pic_res = await client.get(pic_res)
+
+        # async with httpx.AsyncClient() as client:
+        #     response = await client.get(url_2)
+        # url2 = "https:"+response.json()["img"]
+        # logger.debug(f"图片url：{url2}")
+        # async with httpx.AsyncClient() as client:
+        #     pic_res = await client.get(url2)
+
+        # async with httpx.AsyncClient() as client:
+        #     pic_res = await client.get(url)
+        # async with httpx.AsyncClient() as client:
+        #     response = await client.get(url_1)
+        # url = response.json()["imgurl"]
+        # async with httpx.AsyncClient() as client:
+        #     pic_res = await client.get(url)
+        # logger.debug(f"图片url：{url}")
         path = TEMP_PATH
         filename = f"animation_{int(datetime.datetime.now().timestamp())}_{random.randint(0, 100000)}.jpg"
         with open(path + filename, "wb") as f:
