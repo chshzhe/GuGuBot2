@@ -13,7 +13,7 @@ from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, MessageSegment
 from nonebot.log import logger
 from utils.db import db
 from configs.path_config import FONT_PATH, TEMP_PATH
-from utils.msg_util import text, image_for_shamrock
+from utils.msg_util import text, upload_for_shamrock
 from utils.send_queue import message_queue
 
 __plugin_name__ = "词云"
@@ -81,10 +81,12 @@ async def generate_word_cloud(group_id: int, user_id: int = None) -> MessageSegm
             return text("暂无消息记录诶")
         else:
             frequency = data_filter(data)
+            if frequency == {}:
+                return text("暂无消息记录诶")
             path = TEMP_PATH
             file = f"wordcloud_{int(datetime.datetime.now().timestamp())}_{group_id}_{user_id}.png"
             await generate_picture(frequency, path + file)
-            msg = await image_for_shamrock(path, file)
+            msg = await upload_for_shamrock(path, file)
             if msg:
                 return msg
             else:

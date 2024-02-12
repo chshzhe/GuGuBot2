@@ -11,8 +11,8 @@ from nonebot import logger
 from nonebot.adapters.onebot.v11.message import MessageSegment
 from configs.path_config import IMAGE_PATH, VOICE_PATH
 from configs.config import HTTP_API_URL
-endpoint = '/upload_file'
-
+endpoint_upload = '/upload_file'
+endpoint_download = '/download_file'
 def image(
         img_file: str = None,
         path: str = "",
@@ -112,11 +112,11 @@ def reply(id_: int) -> MessageSegment:
     return MessageSegment.reply(id_)
 
 
-async def image_for_shamrock(path: str, filename: str) -> Union[MessageSegment,None]:
+async def upload_for_shamrock(path: str, filename: str) -> Union[MessageSegment,None]:
     if os.path.exists(path + filename):
         try:
             with open(path + filename, 'rb') as f:
-                response = requests.post(HTTP_API_URL + endpoint, files={'file': f}).json()
+                response = requests.post(HTTP_API_URL + endpoint_upload, files={'file': f}).json()
             if response['status'] == 'ok':
                 temp_name = response['data']['file']
                 md5 = response['data']['md5']
@@ -128,3 +128,4 @@ async def image_for_shamrock(path: str, filename: str) -> Union[MessageSegment,N
         except Exception as e:
             logger.error(f"图片上传缓存失败，错误信息为{e}")
             return None
+
