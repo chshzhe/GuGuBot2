@@ -70,7 +70,7 @@ async def check_update():
         return
     if not fetched_news:
         return
-    for news in news_list:
+    for news in fetched_news:
         if not _url_match(news, news_list):
             news_list.append(news)
             logger.info(f"检测到通知：{news['title']}")
