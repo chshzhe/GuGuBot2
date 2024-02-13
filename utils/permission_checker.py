@@ -249,7 +249,7 @@ async def handle_pm_command(bot: Bot, event: MessageEvent, state: T_State, args=
                         break
                 else:
                     response_msg = "未找到指定的插件或命令。"
-    await message_queue.put((response_msg, event, bot))
+    message_queue.put((response_msg, event, bot))
     await PM_Command.finish()
 
 
