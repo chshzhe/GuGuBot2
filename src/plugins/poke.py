@@ -17,7 +17,7 @@ __default_permission__ = True
 
 
 async def __poke_notify__(bot: Bot, event: Event) -> bool:
-    if isinstance(event, PokeNotifyEvent) and event.is_tome():
+    if isinstance(event, PokeNotifyEvent) and event.notice_type == 'notify' and event.sub_type == 'poke' and event.is_tome():
         return True
     return False
 

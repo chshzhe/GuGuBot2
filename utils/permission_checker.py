@@ -140,8 +140,15 @@ class AuthManager:
         async def _role(event: Event) -> bool:
             if isinstance(event, PrivateMessageEvent):
                 return True
+
             group_id = str(event.group_id)
-            user_id = str(event.user_id)
+            if hasattr(event, 'user_id'):
+                user_id = event.user_id
+            elif hasattr(event, 'sender_id'):
+                user_id = event.sender_id
+            else:
+                user_id = None
+                logger.error(f"未找到用户ID, event: {event}")
             return self.check_permission(group_id, user_id, plugin_name, command)
 
         return Rule(_role)
