@@ -1,7 +1,7 @@
 from random import random, choice
 from nonebot import on_notice
 from nonebot.typing import T_State
-from nonebot.adapters.onebot.v11 import Bot, Event, Message, PokeNotifyEvent
+from nonebot.adapters.onebot.v11 import Bot, Event, Message, PokeNotifyEvent, GROUP
 from nonebot.log import logger
 from configs.config import BOT_NAME
 from utils.permission_checker import auth_manager
@@ -17,12 +17,13 @@ __default_permission__ = True
 
 
 async def __poke_notify__(bot: Bot, event: Event) -> bool:
-    if isinstance(event, PokeNotifyEvent) and event.notice_type == 'notify' and event.sub_type == 'poke' and event.is_tome():
+    if isinstance(event, PokeNotifyEvent) and event.is_tome():
         return True
     return False
 
 
-Poke = on_notice(rule=__poke_notify__ & auth_manager.get_rule(f"{__plugin_cmd_name__}"),
+Poke = on_notice(
+                 rule=__poke_notify__ & auth_manager.get_rule(f"{__plugin_cmd_name__}"),
                  priority=1,
                  block=False,
                  )

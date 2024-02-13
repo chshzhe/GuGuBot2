@@ -23,9 +23,10 @@ async def send_message():
                     logger.error(f"发送消息失败：未知的event类型，{message, event, bot, args}")
             else:
                 logger.error(f"发送消息失败：未知的event类型，{message, event, bot, args}")
-            await asyncio.sleep(1)
+            await asyncio.sleep(1.5)
         except Exception as e:
             logger.error(f"发送消息失败,{e}")
+        await asyncio.sleep(0.5)
 
 
 async def message_sender():
@@ -33,7 +34,7 @@ async def message_sender():
         if not message_queue.empty():
             await send_message()
         else:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1)
 
 
 message_queue = Queue()
