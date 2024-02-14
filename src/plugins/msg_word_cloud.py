@@ -76,9 +76,12 @@ async def generate_word_cloud(group_id: int, user_id: int = None) -> MessageSegm
         return text("本群暂无消息记录诶")
     else:
         if user_id:
-            data = db.query(f"SELECT message FROM msg{group_id} WHERE user_id = {user_id}")
+            data = db.query(f"SELECT message FROM msg{group_id} "
+                            f"WHERE user_id = {user_id} "
+                            f"AND time > datetime('now', '-3 day')")
         else:
-            data = db.query(f"SELECT message FROM msg{group_id} WHERE time > datetime('now', '-1 day')")
+            data = db.query(f"SELECT message FROM msg{group_id} "
+                            f"WHERE time > datetime('now', '-1 day')")
         if not data:
             return text("暂无消息记录诶")
         else:
