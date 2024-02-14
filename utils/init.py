@@ -1,9 +1,24 @@
 import sys
+from typing import TYPE_CHECKING
 
-from nonebot.log import logger
+if TYPE_CHECKING:
+    from loguru import Logger, Record
+from nonebot.log import logger, logger_id
 from configs.config import INFO_LOG_TIME, DEBUG_LOG_TIME, ERROR_LOG_TIME, WARNING_LOG_TIME
 from configs.path_config import LOG_PATH
 from utils.db import db
+
+
+def custom_filter(record: "Record"):
+    # 排除info级别的日志
+    log_level = record["extra"].get("nonebot_log_level", "INFO")
+    levelno = logger.level(log_level).no if isinstance(log_level, str) else log_level
+    flag1 = record["level"].no >= levelno
+    if record["function"] in ['_run_matcher', 'simple_run']:
+        flag2 = False
+    else:
+        flag2 = True
+    return flag1 and flag2
 
 
 async def init_bot_startup():
@@ -18,10 +33,10 @@ async def init_bot_startup():
     )
     logger.add(
         sys.stdout,
-        level="DEBUG",
+        level=0,
         format=special_format,
+        filter=custom_filter
     )
-
     custom_format = (
         "<g>{time:YYYY-MM-DD HH:mm:ss}</g> " "[{level}] " "{name} | " "{message}"
     )

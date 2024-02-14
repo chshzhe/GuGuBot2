@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 from typing import List, Dict
 
@@ -43,7 +44,7 @@ MsgWordCloud = on_command("-wc",
 
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "Q"]
 ignore = ["E402", "E501", "E711", "C901", "UP037"]
-
+jieba.setLogLevel(logging.WARNING)
 
 @MsgWordCloud.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State, args=CommandArg()):
