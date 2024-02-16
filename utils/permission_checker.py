@@ -42,6 +42,7 @@ class AuthManager:
         try:
             with open(self.filepath, "r", encoding="utf-8") as f:
                 self.command_permissions = json.load(f)
+            self.save_permissions()
             logger.info(f"已加载权限数据：{self.command_permissions}")
         except FileNotFoundError:
             self.command_permissions = {}
@@ -51,6 +52,8 @@ class AuthManager:
 
     def save_permissions(self) -> None:
         """将权限数据保存到 JSON 文件"""
+        for k, v in self.command_permissions.items():
+            self.command_permissions[k] = dict(sorted(v.items(), key=lambda x: x[0]))
         with open(self.filepath, "w", encoding="utf-8") as f:
             json.dump(self.command_permissions, f, ensure_ascii=False, indent=4)
 
@@ -285,16 +288,6 @@ async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
 命令：-pm <插件名称/命令> <动作> <参数(可选)>
 ==============
 如果插件名称是couplet，也就是对联功能，那-pm couplet on可以打开对联功能，-pm couplet off即为关闭对联功能。
-插件名称/命令列表：
-来点那个：picture
-答案之书：answerbook
-对联：couplet
-表白：declaration
-接龙：dragon
-早安晚安：greeting
-词云：wc
-戳一戳：poke
-教务处公告：jwc
 ===============
 任命/取消任命群管：
 -pm admin add/del <qq号>
@@ -305,11 +298,12 @@ async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
 -pm help
         """
     if event.raw_message == "-pm status":
+        logger.debug(f"收到 -pm status 命令")
+        message_queue.put((f"正在生成图片，请稍后...", event, bot))
         group_id = event.group_id
         group_permissions = auth_manager.command_permissions.get(str(group_id), {})
         command_description = auth_manager.command_description
         plugins_data = []
-        logger.debug(f"z!!!!!!!!!!!!!")
         for plugin in group_permissions.keys():
             temp = {'name': plugin, 'descriptions': {}}
             if isinstance(group_permissions[plugin], bool):
