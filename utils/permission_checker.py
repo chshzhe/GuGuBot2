@@ -8,7 +8,8 @@ from nonebot.rule import Rule
 from nonebot.plugin import get_loaded_plugins
 from nonebot.typing import T_State
 
-from configs.path_config import PERMISSION_PATH
+from configs.path_config import PERMISSION_PATH, TEMP_PATH
+from utils.msg_util import template_to_image, upload_for_shamrock
 from utils.send_queue import message_queue
 
 """
@@ -32,6 +33,7 @@ class AuthManager:
     def __init__(self, filepath: str):
         self.filepath = filepath
         self.command_permissions = {}
+        self.command_description = {}
         self.load_permissions()
         self.default_permissions = {}
 
@@ -106,10 +108,12 @@ class AuthManager:
 
         return Permission(_permission)
 
-    def load_plugin_default_permissions(self) -> None:
-        """加载所有插件的默认权限"""
+    def load_plugin_default_perm_and_desc(self) -> None:
+        """加载所有插件的默认权限和说明"""
         loaded_plugins = get_loaded_plugins()
-        for plugin in loaded_plugins:
+        loaded_plugins_list = list(loaded_plugins)
+        loaded_plugins_list.sort(key=lambda x: x.name)
+        for plugin in loaded_plugins_list:
             # 从插件模块获取插件名和默认权限
             plugin_name = getattr(plugin.module, "__plugin_cmd_name__", None)
             if plugin_name is None and plugin.name not in ["on_bot_connect", "nonebot_plugin_apscheduler",
@@ -117,10 +121,15 @@ class AuthManager:
                 logger.warning(f"插件 {plugin.module} 未设置 __plugin_cmd_name__ 属性，无法加载默认权限")
                 continue
             default_permission = getattr(plugin.module, "__default_permission__", None)
+            command_description = getattr(plugin.module, "__command_description__", None)
             logger.debug(f"插件 {plugin_name} 的默认权限：{default_permission}")
+            logger.debug(f"插件 {plugin_name} 的命令说明：{command_description}")
             if default_permission is not None:
                 self.default_permissions[plugin_name] = default_permission
+            if command_description is not None:
+                self.command_description[plugin_name] = command_description
         logger.info(f"已加载所有插件的默认权限：{self.default_permissions}")
+        logger.info(f"已加载所有插件的命令说明：{self.command_description}")
 
     def update_permission(self, group_id: str, value: Dict[str, Any]) -> None:
         """更新权限"""
@@ -267,8 +276,10 @@ PM_Info = on_fullmatch(("-pm help", "-pm status"),
                        block=True,
                        )
 
+
 @PM_Info.handle()
 async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
+    response_msg = ""
     if event.raw_message == "-pm help":
         response_msg = """管理插件功能：
 命令：-pm <插件名称/命令> <动作> <参数(可选)>
@@ -294,12 +305,37 @@ async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
 -pm help
         """
     if event.raw_message == "-pm status":
-        group_permissions = auth_manager.command_permissions.get(str(event.group_id), {})
-        response_msg = "当前群权限设置：\n"
-        for k, v in group_permissions.items():
-            response_msg += f"{k}：{v}\n"
-
+        group_id = event.group_id
+        group_permissions = auth_manager.command_permissions.get(str(group_id), {})
+        command_description = auth_manager.command_description
+        plugins_data = []
+        logger.debug(f"z!!!!!!!!!!!!!")
+        for plugin in group_permissions.keys():
+            temp = {'name': plugin, 'descriptions': {}}
+            if isinstance(group_permissions[plugin], bool):
+                temp['descriptions'][command_description[plugin]] = group_permissions[plugin]
+            if isinstance(group_permissions[plugin], dict):
+                for cmd, perm in group_permissions[plugin].items():
+                    temp['descriptions'][command_description[plugin][cmd]] = perm
+            if isinstance(group_permissions[plugin], list):
+                temp['descriptions'][command_description[plugin]] = group_permissions[plugin]
+            plugins_data.append(temp)
+        logger.debug(f"群{group_id}权限设置：{plugins_data}")
+        # response_msg = f"当前群权限设置TEST"
+        extra_info = {
+            'group_id': group_id,
+            'powered_by': 'GuGuBot2.0'
+        }
+        path = TEMP_PATH
+        file = f"permission_manager_{group_id}.png"
+        logger.debug(f"开始渲染{plugins_data}")
+        await template_to_image(template_name="permission_manager",
+                                img_name=file,
+                                plugins=plugins_data,
+                                **extra_info)
+        response_msg = await upload_for_shamrock(path, file)
     # else:
     #     response_msg = f"当前群权限设置：{auth_manager.command_permissions.get(str(event.group_id), '未设置')}"
-    message_queue.put((response_msg, event, bot))
+    if response_msg:
+        message_queue.put((response_msg, event, bot))
     await PM_Info.finish()

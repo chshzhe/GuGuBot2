@@ -14,7 +14,7 @@ __plugin_usage__ = f"""咕咕给您生成对联
 __plugin_cmd_name__ = "couplet"
 
 __default_permission__ = False
-
+__command_description__ = "生成对联：对联 <上联>\n随机生成对联：对对联 <上联>"
 Couplet = on_startswith(("对联 ", "对对联 "),
                         rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
                         permission=GROUP,

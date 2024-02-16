@@ -35,7 +35,10 @@ __default_permission_cn__ = {
     "wc": "词云生成",
     "wcsub": "词云订阅"
 }
-
+__command_description__ = {
+    "wc": """生成本群昨日词云：-wc\n生成指定用户近三天词云：-wc <QQ号>\n生成自己的词云：-wcme""",
+    "wcsub": "词云订阅"
+}
 MsgWordCloud = on_command("-wc",
                           rule=auth_manager.get_rule(f"{__plugin_cmd_name__}", "wc"),
                           permission=GROUP,

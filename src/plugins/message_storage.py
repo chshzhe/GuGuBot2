@@ -28,5 +28,9 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
         );""")
     db.insert(f"""INSERT INTO msg{group_id} (time, user_id, message, msg_id) VALUES (?, ?, ?, ?)""",
               (datetime.fromtimestamp(time), user_id, message, msg_id))
+    from html2image import Html2Image
 
+    hti = Html2Image()
+    # screenshot an HTML string (css is optional)
+    hti.screenshot(html_str=output, css_str=css_str, save_as='page.png', size=(640, 1000))
     await MessageStorage.finish()

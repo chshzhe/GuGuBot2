@@ -16,7 +16,7 @@ __plugin_usage__ = f"""roll一张二次元图片
 __plugin_cmd_name__ = "picture"
 
 __default_permission__ = False
-
+__command_description__ = "来点动漫图片：来点那个"
 Couplet = on_fullmatch("来点那个",
                        rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
                        permission=GROUP,

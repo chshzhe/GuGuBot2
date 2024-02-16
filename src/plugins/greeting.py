@@ -13,7 +13,7 @@ __plugin_usage__ = f"""早安晚安捏~
 早安/晚安：来自{BOT_NAME}的问候
 """
 __plugin_cmd_name__ = "greeting"
-
+__command_description__="来自咕咕的问候：早安[...]/晚安[...]"
 __default_permission__ = True
 
 Morning = on_startswith("早安",

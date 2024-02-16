@@ -11,5 +11,5 @@ driver = get_driver()
 @driver.on_bot_connect
 async def _():
     logger.debug("已连接到BOT")
-    auth_manager.load_plugin_default_permissions()
+    auth_manager.load_plugin_default_perm_and_desc()
     await asyncio.create_task(message_sender())

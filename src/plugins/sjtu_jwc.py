@@ -36,7 +36,10 @@ __default_permission_cn__ = {
     "jwc": "教务处通知查询",
     "jwcsub": "教务处通知订阅"
 }
-
+__command_description__ = {
+    "jwc": """获取教务处通知：-jwc""",
+    "jwcsub": "教务处通知订阅：-jwcsub"
+}
 Jwc_message = on_startswith(("-jwc",),
                             rule=auth_manager.get_rule(f"jwc", "jwc"),
                             permission=GROUP,

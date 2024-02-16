@@ -14,6 +14,9 @@ __plugin_cmd_name__ = "test"
 __default_permission__ = {
     "test": True
 }
+__command_description__ = {
+    "test": "测试"
+}
 
 # __default_permission__ = True
 # __default_permission__ = ["1234567"]

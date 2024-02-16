@@ -13,7 +13,7 @@ __plugin_usage__ = f"""通过马纳姆效应解决历史难题
 {BOT_NAME}，……: 告诉你如何解决……
 """
 __plugin_cmd_name__ = "answerbook"
-
+__command_description__ = f"通过马纳姆效应解决历史难题：{BOT_NAME}，[...]"
 __default_permission__ = True
 
 AnswerBook = on_startswith((f"{BOT_NAME}，", f"{BOT_NAME} ", f"{BOT_NAME},", f"{BOT_NAME}.", f"{BOT_NAME}。"),

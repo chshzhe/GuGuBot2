@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="permission_manager.css">
+<body>
+    <div class="container">
+        <div class="plugin-management-header">插件管理</div>
+        <div class="plugins-container">
+            {% for plugin in plugins %}
+                <div class="plugin">
+                    <div class="plugin-name">{{ plugin.name }}</div>
+                    <div class="plugin-description">
+                         {% for desc, status in plugin.descriptions.items() %}
+                              {% if status is boolean %}
+                                   <span class="description-item" data-status= "{{ 'true' if status else 'false' }}">{{ desc | replace('\n', '<br> <span class="custom-gap"></span>') }}</span>
+                              {% else %}
+                                   <span class="description-item" data-list="{{ status }}}">{{ desc | replace('\n', '<br> <span class="custom-gap"></span>') }}: {{ status | join('、') }}</span>
+                              {% endif %}
+                         {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            <!-- 这里可以添加更多插件 -->
+        </div>
+        <footer>
+            当前群号：{{ group_id }}<br>
+            Powered By {{ powered_by }}
+        </footer>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // 遍历所有插件
+    document.querySelectorAll('.plugin').forEach(function(plugin) {
+        // 获取该插件下所有描述项
+        const descriptions = plugin.querySelectorAll('.description-item');
+        let allBoolFalse = true; // 假设所有布尔描述都是false
+
+        // 首先检查布尔项的状态
+        descriptions.forEach(function(desc) {
+            if (desc.getAttribute('data-status') === 'true') {
+                allBoolFalse = false; // 如果找到任何一个布尔项为true，则标记为非全false
+            }
+        });
+
+        // 根据布尔项的状态调整描述项和插件名称的颜色
+        const pluginName = plugin.querySelector('.plugin-name');
+        let hasTrueOrList = false; // 用于标记是否存在true状态的布尔项或列表项
+        descriptions.forEach(function(desc) {
+            if (desc.hasAttribute('data-list')) {
+                // 如果存在列表项
+                if (allBoolFalse) {
+                    // 如果所有布尔项都是false，则列表项也变灰
+                    desc.style.color = '#ccc';
+                } else {
+                    // 否则保持默认颜色
+                    hasTrueOrList = true;
+                }
+            } else if (desc.getAttribute('data-status') === 'true') {
+                // 如果布尔项为true
+                hasTrueOrList = true;
+            } else {
+                // 布尔项为false
+                desc.style.color = '#ccc';
+            }
+        });
+
+        // 根据是否存在true状态的布尔项或列表项调整插件名称的颜色
+        if (!hasTrueOrList) {
+            // 如果所有描述都是false，则将插件名称设置为灰色
+            pluginName.style.color = '#ccc';
+        } else {
+            // 否则，设置为草绿色
+            pluginName.style.color = '#008000';
+        }
+    });
+});
+</script>
+
+</body>
+</html>

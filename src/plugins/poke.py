@@ -12,7 +12,7 @@ __plugin_usage__ = f"""戳戳你的~
 大概是bot被戳了就会反戳你一下，说不定还有彩蛋呢~
 """
 __plugin_cmd_name__ = "poke"
-
+__command_description__ = "大概是戳bot一下，就会反戳你，说不定还有彩蛋呢~"
 __default_permission__ = True
 
 

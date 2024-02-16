@@ -17,7 +17,7 @@ TEMP_PATH = Path("temp/")
 # 权限文件路径
 PERMISSION_PATH = Path("configs/permission.json")
 # 数据库路径
-DATABASE_PATH = Path("src/resource/database/")
+DATABASE_PATH = Path("database/")
 
 
 def init_path():
@@ -35,10 +35,10 @@ def init_path():
     IMAGE_PATH = str(IMAGE_PATH.absolute()) + "/"  # type: ignore
     VOICE_PATH = str(VOICE_PATH.absolute()) + "/"  # type: ignore
     TEXT_PATH = str(TEXT_PATH.absolute()) + "/"  # type: ignore
-    TEMPLATE_PATH = str(TEMPLATE_PATH.absolute()) + "/"  # type: ignore
+    TEMPLATE_PATH = str(TEMPLATE_PATH.absolute()) + "\\"  # type: ignore
     FONT_PATH = str(FONT_PATH.absolute()) + "/"  # type: ignore
     LOG_PATH = str(LOG_PATH.absolute()) + "/"  # type: ignore
-    TEMP_PATH = str(TEMP_PATH.absolute()) + "/"  # type: ignore
+    TEMP_PATH = str(TEMP_PATH.absolute()) + "\\"  # type: ignore
     DATABASE_PATH = str(DATABASE_PATH.absolute()) + "/"  # type: ignore
 
 

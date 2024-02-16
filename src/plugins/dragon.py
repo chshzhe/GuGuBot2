@@ -13,7 +13,7 @@ __plugin_usage__ = f"""什么逆天功能~
 __plugin_cmd_name__ = "dragon"
 
 __default_permission__ = False
-
+__command_description__ = f"自动接龙：龙/接龙"
 Dragon = on_fullmatch(("龙",
                        "接龙",
                        # """[该消息类型不支持查看，请使用QQ最新版本]"""

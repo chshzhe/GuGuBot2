@@ -2,17 +2,25 @@ from nonebot import on_fullmatch
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger
-from configs.config import BOT_NAME
+from configs.config import BOT_NAME, SUPERUSERS
 from utils.permission_checker import auth_manager
 from utils.send_queue import message_queue
 
-__plugin_name__ = "接个龙龙"
-__plugin_usage__ = f"""什么逆天功能~
-早安/晚安：来自{BOT_NAME}的问候
-"""
-__plugin_cmd_name__ = "dragon"
+__plugin_name__ = "自助问答"
+__plugin_usage__ = None
+__plugin_cmd_name__ = "faq"
 
-__default_permission__ = False
+__default_permission__ = {
+    "faq": True,
+    "faqstatus": ["Normal"],
+    "faqadmin": [] + SUPERUSERS
+}
+__command_description__={
+    "faq": "自助问答：问 [...]\n不过还没写好",
+    "faqstatus": "自助问答权限管理状态",
+    "faqadmin": "自助问答管理"
+}
+
 
 Dragon = on_fullmatch(("龙",
                        "接龙",

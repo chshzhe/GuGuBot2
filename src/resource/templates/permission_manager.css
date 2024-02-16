@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif; /* 设置字体 */
+    background-color: #fff; /* 网页背景色为白色 */
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 800px; /* 固定宽度 */
+    padding: 20px;
+}
+
+.plugin-management-header {
+    background-color: #008000; /* 草绿色背景 */
+    color: #fff; /* 白色文字 */
+    font-size: 24px;
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    width: fit-content;
+    margin: 20px auto; /* 居中显示 */
+}
+
+.plugins-container {
+    column-count: 2; /* 分成两列 */
+    column-gap: 20px; /* 列与列之间的间距 */
+    padding: 10px;
+}
+
+
+.plugin {
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 20px; /* 仅设置底部间距，以在瀑布流中分隔插件 */
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    break-inside: avoid; /* 避免插件跨列拆分 */
+    background-color: #f9f9f9; /* 设置插件背景色为浅灰色，以便与白色背景区分 */
+}
+
+.plugin-name {
+    font-size: 20px;
+    color: #008000; /* 草绿色 */
+    margin-bottom: 5px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+.plugin-description {
+    padding-top: 5px;
+}
+
+.description-item {
+
+    display: block;
+    color: #000; /* 默认黑色 */
+    margin: 5px 0;
+}
+
+.description-item[data-status="false"] {
+    color: #ccc; /* 灰色 */
+}
+footer {
+    text-align: center;
+    font-size: 12px; /* 设置为小字 */
+    color: #666; /* 深灰色 */
+    padding: 10px;
+    width: 100%;
+}
+
+br + span.custom-gap {
+    display: block;
+    margin-bottom: 3px; /* 与描述项间隔相同 */
+}

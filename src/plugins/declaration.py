@@ -3,6 +3,8 @@ import httpx
 from nonebot import on_startswith, logger
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.typing import T_State
+
+from configs.config import BOT_NAME
 from utils.permission_checker import auth_manager
 from utils.send_queue import message_queue
 
@@ -14,7 +16,7 @@ __plugin_usage__ = f"""咕咕帮您表白~
 __plugin_cmd_name__ = "declaration"
 
 __default_permission__ = False
-
+__command_description__ = f"{BOT_NAME}帮你表白：表白[...]"
 Declaration = on_startswith("表白",
                             rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
                             permission=GROUP,
