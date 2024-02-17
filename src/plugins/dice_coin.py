@@ -13,21 +13,21 @@ __plugin_usage__ = f"""抛硬币或者骰子
 """
 __plugin_cmd_name__ = "choice"
 __command_description__ = {
-    "coin": "抛硬币：投个硬币/抛硬币/硬币/coin[...]",
-    "dice": "抛骰子：投个骰子/抛骰子/骰子/dice[...]"
+    "coin": "抛硬币：投个硬币/抛硬币/-coin[...]",
+    "dice": "抛骰子：投个骰子/抛骰子/-dice[...]"
 }
 __default_permission__ = {
     "coin": True,
     "dice": True
 }
 
-Coin = on_startswith(("投个硬币", "抛硬币", "硬币", "coin"),
+Coin = on_startswith(("投个硬币", "抛硬币", "-coin"),
                      rule=auth_manager.get_rule(f"{__plugin_cmd_name__}", "coin"),
                      permission=GROUP,
                      priority=22,
                      )
 
-Dice = on_startswith(("投个骰子", "抛骰子", "骰子", "dice"),
+Dice = on_startswith(("投个骰子", "抛骰子", "-dice"),
                      rule=auth_manager.get_rule(f"{__plugin_cmd_name__}", "dice"),
                      permission=GROUP,
                      priority=22,
