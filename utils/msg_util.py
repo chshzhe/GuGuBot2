@@ -1,27 +1,15 @@
-## Author HibiKier/zhenxun_bot
-## Edit by FYWinds
 import os
-
 import requests
 import ujson
 from io import BytesIO
 from typing import Union, Optional
-from html2image import Html2Image
 from jinja2 import Environment, FileSystemLoader
+import urllib.parse
 from nonebot import logger
 from nonebot.adapters.onebot.v11.message import MessageSegment
 from configs.path_config import IMAGE_PATH, VOICE_PATH, TEMPLATE_PATH, TEMP_PATH
 from configs.config import HTTP_API_URL
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
-# 设置Chrome选项，如果需要的话
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')  # 无头模式，没有界面打开浏览器
-# options.add_argument('--disable-gpu')  # 禁用GPU加速，某些情况下需要
-
-# 初始化WebDriver
+from utils.browser import get_browser
 
 endpoint_upload = '/upload_file'
 endpoint_download = '/download_file'
@@ -142,33 +130,32 @@ async def upload_for_shamrock(path: str, filename: str) -> Union[MessageSegment,
         except Exception as e:
             logger.error(f"图片上传缓存失败，错误信息为{e}")
             return None
+    else:
+        logger.warning(f"图片{filename}不存在")
+        return None
 
 
 async def template_to_image(
         template_name: str,
         img_name: str,
-        # plugins: list,
-        # extra_info: dict,
-        size: tuple = (640, 1000),
         **kwargs
-
 ) -> None:
-
-    env = Environment(loader=FileSystemLoader(TEMPLATE_PATH))
-    template = env.get_template(f"{template_name}.html")
-    output = template.render(kwargs)
-    with open(f"{TEMP_PATH}{img_name.replace('.png','')}.html", 'w', encoding='utf-8') as f:
-        f.write(output)
-    with open(f'{TEMPLATE_PATH}{template_name}.css', 'r', encoding='utf-8') as f:
-        css_str = f.read()
-    with open(f"{TEMP_PATH}{template_name}.css", 'w', encoding='utf-8') as f:
-        f.write(css_str)
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get(f"file://{TEMP_PATH}{img_name.replace('.png','')}.html")  # 确保HTML文件中的CSS链接是正确的
-    driver.implicitly_wait(0.5)  # 根据需要调整等待时间
-    height = driver.execute_script("return document.documentElement.scrollHeight")
-    logger.debug(f"页面像素高度: {height}")
-    hti = Html2Image(output_path=TEMP_PATH, temp_path=TEMP_PATH, keep_temp_files=True)
-    hti.screenshot(html_str=output, css_str=css_str, save_as=img_name, size=(840, height))
-    # 关闭浏览器
-    driver.quit()
+    try:
+        env = Environment(loader=FileSystemLoader(TEMPLATE_PATH))
+        template = env.get_template(f"{template_name}.html")
+        html_str = template.render(kwargs)
+        with open(f'{TEMPLATE_PATH}{template_name}.css', 'r', encoding='utf-8') as f:
+            css_str = f.read()
+        html_with_css = f"<html>\n<style>\n{css_str}\n</style>\n{html_str}\n"
+        browser = get_browser()
+        encoded_html = urllib.parse.quote(html_with_css)
+        data_url = f"data:text/html;charset=utf-8,{encoded_html}"
+        browser.get(data_url)
+        width = browser.execute_script("return document.body.scrollWidth")
+        height = browser.execute_script("return document.body.scrollHeight")
+        logger.debug(f"页面width: {width}, height: {height}")
+        browser.set_window_size(840, height)
+        browser.save_screenshot(f"{TEMP_PATH}{img_name}.png")
+        logger.info(f"模板{template_name}生成图片{img_name}成功")
+    except Exception as e:
+        logger.error(f"模板{template_name}生成图片{img_name}失败，错误信息为{e}")

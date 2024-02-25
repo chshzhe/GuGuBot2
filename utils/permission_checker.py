@@ -299,7 +299,7 @@ async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
         """
     if event.raw_message == "-pm status":
         logger.debug(f"收到 -pm status 命令")
-        message_queue.put((f"正在生成图片，请稍后...", event, bot))
+        # message_queue.put((f"正在生成图片，请稍后...", event, bot))
         group_id = event.group_id
         group_permissions = auth_manager.command_permissions.get(str(group_id), {})
         command_description = auth_manager.command_description
@@ -315,19 +315,18 @@ async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
                 temp['descriptions'][command_description[plugin]] = group_permissions[plugin]
             plugins_data.append(temp)
         logger.debug(f"群{group_id}权限设置：{plugins_data}")
-        # response_msg = f"当前群权限设置TEST"
         extra_info = {
             'group_id': group_id,
             'powered_by': 'GuGuBot2.0'
         }
         path = TEMP_PATH
-        file = f"permission_manager_{group_id}.png"
+        file = f"permission_manager_{group_id}"
         logger.debug(f"开始渲染{plugins_data}")
         await template_to_image(template_name="permission_manager",
                                 img_name=file,
                                 plugins=plugins_data,
                                 **extra_info)
-        response_msg = await upload_for_shamrock(path, file)
+        response_msg = await upload_for_shamrock(path, f"{file}.png")
     # else:
     #     response_msg = f"当前群权限设置：{auth_manager.command_permissions.get(str(event.group_id), '未设置')}"
     if response_msg:
