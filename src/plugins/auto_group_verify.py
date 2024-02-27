@@ -1,4 +1,7 @@
 import re
+from datetime import datetime
+from typing import List, Tuple
+
 import pandas as pd
 from nonebot import on_request, get_driver
 from nonebot.adapters.onebot.v11 import Bot, Event
@@ -27,7 +30,7 @@ MODE_WAIT = 3
 driver = get_driver()
 
 stu_db = SQLiteDB(DATABASE_PATH + "identify.db")
-
+add_group_result = SQLiteDB(DATABASE_PATH + "identify_result.db")
 stu_csv_path = TEXT_PATH + '/verify/example.csv'
 
 
@@ -43,42 +46,64 @@ async def handle_receive(bot: Bot, event: Event, state: T_State):
                 group_id = event.group_id
                 user_id = event.user_id
                 logger.debug(f"收到加群请求: {event}")
-                verify_result = await verify_user(request_msg)
+                verify_result, stu_id, name = await verify_user(request_msg)
                 if verify_result == MODE_PASS:
                     logger.info(f"{user_id}加群{group_id}验证通过，同意入群")
+                    await add_result_to_db(group_id,
+                                           user_id,
+                                           stu_id,
+                                           name,
+                                           "通过",
+                                           event.time)
                     # await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True)
                     message_queue.put(("", event, bot, "approve_add_group_require"))
                 elif verify_result == MODE_FAIL:
                     logger.info(f"{user_id}加群{group_id}验证失败，拒绝入群")
+                    await add_result_to_db(group_id,
+                                           user_id,
+                                           stu_id,
+                                           name,
+                                           "拒绝",
+                                           event.time)
                     # await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=False,
                     #                                 reason="验证失败")
                     message_queue.put(("验证失败", event, bot, "reject_add_group_require"))
                 elif verify_result == MODE_WAIT:
                     logger.info(f"{user_id}加群{group_id}验证等待中")
+                    await add_result_to_db(group_id,
+                                           user_id,
+                                           stu_id,
+                                           name,
+                                           "未定",
+                                           event.time)
                 await AutoVerify.finish()
             else:
                 logger.warning(f"没有comment: {event}")
                 await AutoVerify.finish()
 
 
-async def verify_user(comment: str) -> int:
+async def verify_user(comment: str) -> Tuple[int, str, str]:
     logger.debug(f"验证信息: {comment}")
     comment_id = re.findall(r'\d{6,}', comment)[0]
-    logger.debug(f"学号: {comment_id}")
-    check_result = stu_db.query(f"""SELECT * FROM example_table WHERE stuid = '{comment_id}'""")
-    logger.debug(f"查询结果: {check_result}")
-    if check_result:
-        if check_result[0][1] in comment:
-            return MODE_PASS
+    if comment:
+        logger.debug(f"学号: {comment_id}")
+        check_result = stu_db.query(f"""SELECT * FROM example_table WHERE stuid = '{comment_id}'""")
+        logger.debug(f"查询结果: {check_result}")
+        if check_result:
+            if check_result[0][1] in comment:
+                return MODE_PASS, comment_id, check_result[0][1]
+            else:
+                return MODE_FAIL, comment_id, check_result[0][1]
         else:
-            return MODE_FAIL
+            return MODE_WAIT, comment_id, 'None'
     else:
-        return MODE_WAIT
+        return MODE_FAIL, 'FAIL', comment
 
 
 @driver.on_startup
 async def get_name_id():
     stu_db.connect()
+    add_group_result.connect()
     logger.info("身份数据库已连接")
     try:
         excel_data = pd.read_csv(stu_csv_path, encoding='utf-8', dtype=str)
@@ -86,7 +111,21 @@ async def get_name_id():
         logger.error(f"读取csv文件失败，错误信息：{e}")
         return
     excel_data.to_sql('example_table', stu_db.get_conn(), if_exists='replace', index=False)
+    add_group_result.create_table(f"""CREATE TABLE IF NOT EXISTS add_group_result(
+                                        group_id INT,
+                                        user_id INT,
+                                        stu_id TEXT,
+                                        name TEXT,
+                                        result TEXT,
+                                        time DATETIME
+                                        );""")
     logger.info("身份数据库已初始化")
+
+
+async def add_result_to_db(group_id: int, user_id: int, stu_id: str, name: str, result: str, time: int):
+    add_group_result.insert(
+        f"""INSERT INTO add_group_result (group_id, user_id, stu_id, name, result, time) VALUES (?, ?, ?, ?, ?, ?)""",
+        (group_id, user_id, stu_id, name, result, datetime.fromtimestamp(time)))
 
 
 @driver.on_shutdown
