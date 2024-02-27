@@ -1,7 +1,10 @@
+from typing import Optional, Union
+
 from nonebot import on_fullmatch, on_message, on_command
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
+from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebot.log import logger
 from configs.path_config import TEMP_PATH
 from utils.msg_util import template_to_image, upload_for_shamrock
@@ -15,14 +18,11 @@ __plugin_cmd_name__ = "admin"
 __command_description__ = "群权限管理"
 __default_permission__ = [] + SUPERUSERS
 
-MessageStorage = on_message(permission=GROUP,
-                            rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
-                            priority=3,
-                            block=False
-
-                            )
-
-
+Admin = on_message(permission=GROUP,
+                   rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
+                   priority=3,
+                   block=False
+                   )
 
 PM_Command = on_command("-pm",
                         rule=auth_manager.get_rule("admin"),
@@ -128,12 +128,66 @@ async def handle_pm_command(bot: Bot, event: MessageEvent, state: T_State, args=
     await PM_Command.finish()
 
 
+Help = on_fullmatch("-help",
+                    permission=GROUP,
+                    priority=30,
+                    )
+
 PM_Info = on_fullmatch(("-pm help", "-pm status"),
                        rule=auth_manager.get_rule("admin"),
                        permission=GROUP,
                        priority=5,
                        block=True,
                        )
+
+
+async def generate_help_text2img(group_id: int) -> Union[str, Union[MessageSegment, None]]:
+    group_permissions = auth_manager.command_permissions.get(str(group_id), {})
+    if group_permissions == {}:
+        logger.warning(f"未找到群 {group_id} 的权限设置")
+        response_msg = "未找到群权限设置。"
+    else:
+        command_description = auth_manager.command_description
+        plugins_data = []
+        for plugin in group_permissions.keys():
+            if command_description.get(plugin) is None:
+                continue
+            temp = {'name': plugin, 'descriptions': {}}
+            if isinstance(group_permissions[plugin], bool):
+                temp['descriptions'][command_description[plugin]] = group_permissions[plugin]
+            if isinstance(group_permissions[plugin], dict):
+                for cmd, perm in group_permissions[plugin].items():
+                    if command_description.get(plugin) is None:
+                        continue
+                    temp['descriptions'][command_description[plugin][cmd]] = perm
+            if isinstance(group_permissions[plugin], list):
+                temp['descriptions'][command_description[plugin]] = group_permissions[plugin]
+            plugins_data.append(temp)
+        logger.debug(f"群{group_id}权限设置：{plugins_data}")
+        extra_info = {
+            'group_id': group_id,
+            'powered_by': 'GuGuBot2.0'
+        }
+        path = TEMP_PATH
+        file = f"permission_manager_{group_id}"
+        logger.debug(f"开始渲染{plugins_data}")
+        await template_to_image(template_name="permission_manager",
+                                img_name=file,
+                                plugins=plugins_data,
+                                **extra_info)
+        response_msg = await upload_for_shamrock(path, f"{file}.png")
+
+    return response_msg
+
+
+@Help.handle()
+async def handle_help(bot: Bot, event: MessageEvent, state: T_State):
+    logger.debug(f"收到 -help 命令")
+    group_id = event.group_id
+    response_msg = await generate_help_text2img(group_id)
+    if response_msg:
+        message_queue.put((response_msg, event, bot))
+    await Help.finish()
 
 
 @PM_Info.handle()
@@ -157,40 +211,7 @@ async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
         logger.debug(f"收到 -pm status 命令")
         # message_queue.put((f"正在生成图片，请稍后...", event, bot))
         group_id = event.group_id
-        group_permissions = auth_manager.command_permissions.get(str(group_id), {})
-        if group_permissions == {}:
-            logger.warning(f"未找到群 {group_id} 的权限设置")
-            response_msg = "未找到群权限设置。"
-        else:
-            command_description = auth_manager.command_description
-            plugins_data = []
-            for plugin in group_permissions.keys():
-                if command_description.get(plugin) is None:
-                    continue
-                temp = {'name': plugin, 'descriptions': {}}
-                if isinstance(group_permissions[plugin], bool):
-                    temp['descriptions'][command_description[plugin]] = group_permissions[plugin]
-                if isinstance(group_permissions[plugin], dict):
-                    for cmd, perm in group_permissions[plugin].items():
-                        if command_description.get(plugin) is None:
-                            continue
-                        temp['descriptions'][command_description[plugin][cmd]] = perm
-                if isinstance(group_permissions[plugin], list):
-                    temp['descriptions'][command_description[plugin]] = group_permissions[plugin]
-                plugins_data.append(temp)
-            logger.debug(f"群{group_id}权限设置：{plugins_data}")
-            extra_info = {
-                'group_id': group_id,
-                'powered_by': 'GuGuBot2.0'
-            }
-            path = TEMP_PATH
-            file = f"permission_manager_{group_id}"
-            logger.debug(f"开始渲染{plugins_data}")
-            await template_to_image(template_name="permission_manager",
-                                    img_name=file,
-                                    plugins=plugins_data,
-                                    **extra_info)
-            response_msg = await upload_for_shamrock(path, f"{file}.png")
+        response_msg = await generate_help_text2img(group_id)
         # else:
         #     response_msg = f"当前群权限设置：{auth_manager.command_permissions.get(str(event.group_id), '未设置')}"
     if response_msg:
