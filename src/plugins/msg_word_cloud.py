@@ -12,11 +12,11 @@ from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, MessageSegment
 from nonebot.log import logger
-from utils.db import db
+from utils import db
 from configs.path_config import FONT_PATH, TEMP_PATH
 from utils.msg_util import text, upload_for_shamrock
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "词云"
 __plugin_usage__ = f"""根据历史发言生成词云

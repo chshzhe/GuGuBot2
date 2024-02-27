@@ -3,10 +3,8 @@ from nonebot import on_startswith
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger
-from configs.config import BOT_NAME
-from utils.data import BOOK
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "骰子&硬币"
 __plugin_usage__ = f"""抛硬币或者骰子

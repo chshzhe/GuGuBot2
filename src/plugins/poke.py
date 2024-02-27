@@ -5,7 +5,7 @@ from nonebot.adapters.onebot.v11 import Bot, Event, Message, PokeNotifyEvent, GR
 from nonebot.log import logger
 from configs.config import BOT_NAME
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "戳一戳"
 __plugin_usage__ = f"""戳戳你的~
@@ -40,7 +40,7 @@ async def handle_receive(bot: Bot, event: Event, state: T_State):
             "嘤嘤嘤，被戳痛了呜呜呜",
             "不可以戳这里！",
             "再戳会坏掉的QAQ",
-            # "恕我突兀，你是否知晓「纯美」的女神伊德莉拉"
+            "恕我突兀，你是否知晓「纯美」的女神伊德莉拉"
         ])
     else:
         # message = Message(f"[CQ:poke,qq={event.user_id}]")    #go-cqhttp

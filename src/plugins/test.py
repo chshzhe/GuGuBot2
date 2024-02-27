@@ -1,9 +1,7 @@
 from nonebot import on_fullmatch
-from nonebot.internal.permission import Permission
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger
-from configs.config import BOT_NAME
 
 __plugin_name__ = "测试"
 __plugin_usage__ = f"""什么逆天功能~

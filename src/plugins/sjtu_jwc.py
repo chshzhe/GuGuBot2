@@ -1,6 +1,6 @@
 from typing import Dict, List
 import httpx
-import lxml
+import lxml  # requirement need this
 from bs4 import BeautifulSoup
 from nonebot import on_startswith
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
@@ -10,7 +10,7 @@ from nonebot_plugin_apscheduler import scheduler
 from nonebot.typing import T_State
 from configs.config import PREVIEW_GROUP
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 news_list = []
 

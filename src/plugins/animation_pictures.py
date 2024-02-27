@@ -8,7 +8,7 @@ from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message, Messa
 from configs.path_config import TEMP_PATH
 from utils.msg_util import text, upload_for_shamrock
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "来点那个"
 __plugin_usage__ = f"""roll一张二次元图片

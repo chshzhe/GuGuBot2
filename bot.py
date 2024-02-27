@@ -4,15 +4,15 @@ import asyncio
 
 import nonebot
 from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
-from utils.init import init_bot_startup, shutdown
+
 
 nonebot.init()
 app = nonebot.get_asgi()
 
 driver = nonebot.get_driver()
 driver.register_adapter(ONEBOT_V11Adapter)
-driver.on_startup(init_bot_startup)
-driver.on_shutdown(shutdown)
+# driver.on_startup(init_bot_startup)
+# driver.on_shutdown(shutdown)
 
 # Please DO NOT modify this file unless you know what you are doing!
 # As an alternative, you should use command `nb` or modify `pyproject.toml` to load plugins
@@ -24,5 +24,4 @@ nonebot.load_from_toml("pyproject.toml")
 
 
 if __name__ == "__main__":
-    nonebot.logger.warning("Always use `nb run` to start the bot instead of manually running!")
     nonebot.run(app="__mp_main__:app")

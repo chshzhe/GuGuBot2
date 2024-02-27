@@ -6,7 +6,7 @@ from nonebot.log import logger
 from configs.config import BOT_NAME
 from utils.data import BOOK
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "答案之书"
 __plugin_usage__ = f"""通过马纳姆效应解决历史难题

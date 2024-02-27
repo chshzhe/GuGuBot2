@@ -2,9 +2,9 @@ from nonebot import on_fullmatch
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger
-from configs.config import BOT_NAME, SUPERUSERS
+from configs.config import SUPERUSERS
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "自助问答"
 __plugin_usage__ = None

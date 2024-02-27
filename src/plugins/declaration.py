@@ -3,10 +3,9 @@ import httpx
 from nonebot import on_startswith, logger
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.typing import T_State
-
 from configs.config import BOT_NAME
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "表白"
 __plugin_usage__ = f"""咕咕帮您表白~

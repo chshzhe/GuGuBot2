@@ -1,12 +1,15 @@
 import sys
 from typing import TYPE_CHECKING
 
+from nonebot import get_driver
+
 if TYPE_CHECKING:
     from loguru import Logger, Record
 from nonebot.log import logger, logger_id
 from configs.config import INFO_LOG_TIME, DEBUG_LOG_TIME, ERROR_LOG_TIME, WARNING_LOG_TIME
 from configs.path_config import LOG_PATH
-from utils.db import db
+
+driver = get_driver()
 
 
 def custom_filter(record: "Record"):
@@ -21,6 +24,7 @@ def custom_filter(record: "Record"):
     return flag1 and flag2
 
 
+@driver.on_startup
 async def init_bot_startup():
     logger.remove()
     special_format: str = (
@@ -88,9 +92,8 @@ async def init_bot_startup():
     # )
 
     logger.info("Bot started.")
-    db.connect()
 
 
+@driver.on_shutdown
 async def shutdown():
     logger.info("Shutting down...")
-    db.close()

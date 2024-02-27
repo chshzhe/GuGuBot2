@@ -4,7 +4,7 @@ from nonebot import on_startswith, logger
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from utils.permission_checker import auth_manager
-from utils.send_queue import message_queue
+from utils import message_queue
 
 __plugin_name__ = "对联"
 __plugin_usage__ = f"""咕咕给您生成对联
