@@ -1,6 +1,6 @@
 import json
 from typing import Any, Union, Dict
-from nonebot import logger, on_command, on_fullmatch
+from nonebot import logger, on_command, on_fullmatch, get_driver
 from nonebot.adapters.onebot.v11 import Event, PrivateMessageEvent, GROUP, MessageEvent, Bot
 from nonebot.params import CommandArg
 from nonebot.permission import Permission
@@ -64,7 +64,7 @@ class AuthManager:
         :param plugin_name: 插件名
         :param command: 命令(可选)
         """
-        group_perms = self.command_permissions.get(group_id, {})
+        group_perms = self.command_permissions.get(group_id, None)
         if group_perms is None:
             logger.warning(f"未找到群 {group_id} 的权限设置，启用默认权限")
             self.update_permission(group_id, self.default_permissions)
@@ -332,3 +332,23 @@ async def handle_pm_info(bot: Bot, event: MessageEvent, state: T_State):
     if response_msg:
         message_queue.put((response_msg, event, bot))
     await PM_Info.finish()
+
+
+driver = get_driver()
+
+
+@driver.on_startup
+async def load_default_permissions():
+    auth_manager.load_plugin_default_perm_and_desc()
+    for group_id in auth_manager.command_permissions.keys():
+        group_perm = auth_manager.command_permissions[group_id]
+        for k1, v1 in auth_manager.default_permissions.items():
+            if isinstance(v1, dict):
+                for k2, v2 in v1.items():
+                    if hasattr(group_perm, k1) and k2 not in group_perm[k1]:
+                        group_perm[k1][k2] = v2
+                    elif k1 not in group_perm:
+                        group_perm[k1] = v1
+            elif k1 not in group_perm:
+                group_perm[k1] = v1
+        auth_manager.update_permission(group_id, group_perm)
