@@ -8,7 +8,7 @@ from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.log import logger
 from nonebot.typing import T_State
 from configs.path_config import DATABASE_PATH, TEXT_PATH
-from utils import SQLiteDB, message_queue
+from utils import SQLiteDB, request_queue
 from utils.permission_checker import auth_manager
 
 __plugin_name__ = "自动加群验证"
@@ -56,7 +56,7 @@ async def handle_receive(bot: Bot, event: Event, state: T_State):
                                            "通过",
                                            event.time)
                     # await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=True)
-                    message_queue.put(("", event, bot, "approve_add_group_require"))
+                    request_queue.put((bot, event.flag, event.sub_type, True, "验证通过"))
                 elif verify_result == MODE_FAIL:
                     logger.info(f"{user_id}加群{group_id}验证失败，拒绝入群")
                     await add_result_to_db(group_id,
@@ -67,7 +67,7 @@ async def handle_receive(bot: Bot, event: Event, state: T_State):
                                            event.time)
                     # await bot.set_group_add_request(flag=event.flag, sub_type=event.sub_type, approve=False,
                     #                                 reason="验证失败")
-                    message_queue.put(("验证失败", event, bot, "reject_add_group_require"))
+                    request_queue.put((bot, event.flag, event.sub_type, False, "验证失败"))
                 elif verify_result == MODE_WAIT:
                     logger.info(f"{user_id}加群{group_id}验证等待中")
                     await add_result_to_db(group_id,
