@@ -64,8 +64,7 @@
 3. 配置 `被动WebSocket地址` 为 `ws://10.0.2.2:6000/onebot/v11/ws/`，其他端口默认，功能模式打开 `强制平板模式`、`消息格式为CQ码`、`被动WebSocket`、`HTTP`、`WebSocket`。可以参考下面配置。
 ![端口配置](IMG/img-3.png)
 ![功能配置](IMG/img-4.png)
-4. 
-5. 重启模拟器，然后依次启动 `LSPatch` 和 `Shamrock` ，然后启动 QQ 客户端。显示以下内容即为配置完成。
+4. 重启模拟器，然后依次启动 `LSPatch` 和 `Shamrock` ，然后启动 QQ 客户端。显示以下内容即为配置完成。
 
    ```log
    [INFO] uvicorn | asgi_send:287| ('127.0.0.1', 9999) - "WebSocket /onebot/v11/ws" [accepted]
@@ -73,3 +72,10 @@
    [INFO] websockets | handshake:642| connection open
    [DEBUG] on_bot_connect | _:10| 已连接到BOT
    ```
+   
+## 注意事项
+
+1. 环境变量 `.env` 文件中的 `fastapi_reload` 需要为 `false`，群插件会加载两次，导致加群验证有概率会发送两遍报错
+```log
+ActionFailed(status='failed', retcode=35000, data={}, message='操作失败', echo='72')
+```

@@ -42,7 +42,7 @@ class AuthManager:
             with open(self.filepath, "r", encoding="utf-8") as f:
                 self.command_permissions = json.load(f)
             self.save_permissions()
-            logger.info(f"已加载权限数据：{self.command_permissions}")
+            logger.debug(f"已加载权限数据：{self.command_permissions}")
         except FileNotFoundError:
             self.command_permissions = {}
         except json.JSONDecodeError:
@@ -130,15 +130,15 @@ class AuthManager:
                 self.default_permissions[plugin_name] = default_permission
             if command_description is not None:
                 self.command_description[plugin_name] = command_description
-        logger.info(f"已加载所有插件的默认权限：{self.default_permissions}")
-        logger.info(f"已加载所有插件的命令说明：{self.command_description}")
+        # logger.info(f"已加载所有插件的默认权限：{self.default_permissions}")
+        # logger.info(f"已加载所有插件的命令说明：{self.command_description}")
 
     def update_permission(self, group_id: str, value: Dict[str, Any]) -> None:
         """更新权限"""
         self.command_permissions[group_id] = value
         self.save_permissions()
         self.load_permissions()
-        logger.info(f"更新群 {group_id} 的权限设置：{value}")
+        logger.debug(f"更新群 {group_id} 的权限设置：{value}")
 
     def get_rule(self, plugin_name: str, command: Union[str, None] = None) -> Rule:
         """获取一个检查特定命令权限的 Rule 对象
