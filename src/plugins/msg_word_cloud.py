@@ -12,7 +12,7 @@ from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, MessageSegment
 from nonebot.log import logger
-from utils import db
+from utils import msg_db
 from configs.path_config import FONT_PATH, TEMP_PATH
 from utils.msg_util import text, upload_for_shamrock
 from utils.permission_checker import auth_manager
@@ -49,6 +49,7 @@ select = ["E", "W", "F", "UP", "C", "T", "PYI", "Q"]
 ignore = ["E402", "E501", "E711", "C901", "UP037"]
 jieba.setLogLevel(logging.WARNING)
 
+
 @MsgWordCloud.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State, args=CommandArg()):
     logger.info(f"用户：{event.user_id}，在群：{event.group_id}，使用了词云生成，参数{args}")
@@ -76,16 +77,16 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State, args=Com
 
 
 async def generate_word_cloud(group_id: int, user_id: int = None) -> MessageSegment:
-    if not db.table_exists(f"msg{group_id}"):
+    if not msg_db.table_exists(f"msg{group_id}"):
         return text("本群暂无消息记录诶")
     else:
         if user_id:
-            data = db.query(f"SELECT message FROM msg{group_id} "
-                            f"WHERE user_id = {user_id} "
-                            f"AND time > datetime('now', '-3 day')")
+            data = msg_db.query(f"SELECT message FROM msg{group_id} "
+                                f"WHERE user_id = {user_id} "
+                                f"AND time > datetime('now', '-3 day')")
         else:
-            data = db.query(f"SELECT message FROM msg{group_id} "
-                            f"WHERE time > datetime('now', '-1 day')")
+            data = msg_db.query(f"SELECT message FROM msg{group_id} "
+                                f"WHERE time > datetime('now', '-1 day')")
         if not data:
             return text("暂无消息记录诶")
         else:

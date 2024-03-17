@@ -5,7 +5,7 @@ import asyncio
 from nonebot import get_driver, logger
 from utils.permission_checker import auth_manager
 
-db = SQLiteDB(DATABASE_PATH + "GuGuBot.db")
+msg_db = SQLiteDB(DATABASE_PATH + "GuGuBot.db")
 message_queue = MessageQueue()
 request_queue = RequestQueue()
 driver = get_driver()
@@ -13,13 +13,13 @@ driver = get_driver()
 
 @driver.on_startup
 async def init_db():
-    db.connect()
+    msg_db.connect()
     logger.info("数据库已连接")
 
 
 @driver.on_shutdown
 async def close_db():
-    db.close()
+    msg_db.close()
     logger.info("数据库已关闭")
 
 

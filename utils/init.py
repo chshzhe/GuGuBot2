@@ -86,7 +86,7 @@ async def init_bot_startup():
     #     rotation="00:00",
     #     filter=lambda record: "数据库" in record['message']
     #                           or "Database" in record['message']
-    #                           or "db" in record['message'],
+    #                           or "msg_db" in record['message'],
     #     format=custom_format,
     #     encoding="utf-8",
     # )
