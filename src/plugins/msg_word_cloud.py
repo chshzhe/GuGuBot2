@@ -3,14 +3,15 @@ import logging
 import re
 from typing import List, Dict
 
+from nonebot_plugin_apscheduler import scheduler
 from wordcloud import WordCloud
 import jieba
 import jieba.analyse
 from emoji import replace_emoji
-from nonebot import on_command
+from nonebot import on_command, get_bot
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
-from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, MessageSegment, Message
 from nonebot.log import logger
 from utils import msg_db
 from configs.path_config import FONT_PATH, TEMP_PATH
@@ -37,7 +38,7 @@ __default_permission_cn__ = {
 }
 __command_description__ = {
     "wc": """生成本群昨日词云：-wc\n生成指定用户近三天词云：-wc <QQ号>\n生成自己的词云：-wcme""",
-    "wcsub": "词云订阅"
+    "wcsub": "词云订阅：-wcsub"
 }
 MsgWordCloud = on_command("-wc",
                           rule=auth_manager.get_rule(f"{__plugin_cmd_name__}", "wc"),
@@ -74,6 +75,19 @@ async def handle_receive(bot: Bot, event: MessageEvent, state: T_State, args=Com
             message_queue.put((msg, event, bot))
 
     await MsgWordCloud.finish()
+
+
+@scheduler.scheduled_job(id="auto_word_cloud", trigger="cron", hour=0, minute=0, second=0)
+async def word_cloud_subscribe():
+    logger.info("自动生成词云")
+    bot = get_bot()
+    send_group = auth_manager.get_plugin_cmd_list("wc", "wcsub", True)
+    for group in send_group:
+        msg = await generate_word_cloud(group)
+        message_queue.put((Message("昨日词云"), group, bot, "group"))
+        message_queue.put((msg, group, bot, "group"))
+        logger.debug(f"进入群发队列：{msg}")
+        logger.info(f"群{group}，自动发送词云")
 
 
 async def generate_word_cloud(group_id: int, user_id: int = None) -> MessageSegment:

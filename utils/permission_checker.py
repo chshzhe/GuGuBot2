@@ -185,7 +185,7 @@ class AuthManager:
         group_list = []
         for group_id, plugin in self.command_permissions.items():
             if self._get_permission(group_id, plugin_name, cmd_name) == value:
-                group_list.append(group_id)
+                group_list.append(int(group_id))
         logger.debug(f"插件{plugin_name}命令{cmd_name}权限为{value}的群列表：{group_list}")
         return group_list
 

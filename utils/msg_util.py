@@ -2,7 +2,7 @@ import os
 import requests
 import ujson
 from io import BytesIO
-from typing import Union, Optional
+from typing import Union, Optional, List
 from jinja2 import Environment, FileSystemLoader
 import urllib.parse
 from nonebot import logger
