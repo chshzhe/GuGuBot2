@@ -114,25 +114,25 @@ def reply(id_: int) -> MessageSegment:
     return MessageSegment.reply(id_)
 
 
-async def upload_for_shamrock(path: str, filename: str) -> Union[MessageSegment, None]:
-    if os.path.exists(path + filename):
-        try:
-            with open(path + filename, 'rb') as f:
-                response = requests.post(HTTP_API_URL + endpoint_upload, files={'file': f}).json()
-            if response['status'] == 'ok':
-                temp_name = response['data']['file']
-                md5 = response['data']['md5']
-                logger.info(f"图片{filename}上传缓存成功，返回的文件名为{md5}")
-                return MessageSegment.image("file://" + temp_name)
-            else:
-                logger.error(f"图片上传缓存失败，返回的信息为{response}")
-                return None
-        except Exception as e:
-            logger.error(f"图片上传缓存失败，错误信息为{e}")
-            return None
-    else:
-        logger.warning(f"图片{filename}不存在")
-        return None
+# async def upload_for_shamrock(path: str, filename: str) -> Union[MessageSegment, None]:
+#     if os.path.exists(path + filename):
+#         try:
+#             with open(path + filename, 'rb') as f:
+#                 response = requests.post(HTTP_API_URL + endpoint_upload, files={'file': f}).json()
+#             if response['status'] == 'ok':
+#                 temp_name = response['data']['file']
+#                 md5 = response['data']['md5']
+#                 logger.info(f"图片{filename}上传缓存成功，返回的文件名为{md5}")
+#                 return MessageSegment.image("file://" + temp_name)
+#             else:
+#                 logger.error(f"图片上传缓存失败，返回的信息为{response}")
+#                 return None
+#         except Exception as e:
+#             logger.error(f"图片上传缓存失败，错误信息为{e}")
+#             return None
+#     else:
+#         logger.warning(f"图片{filename}不存在")
+#         return None
 
 
 async def template_to_image(
