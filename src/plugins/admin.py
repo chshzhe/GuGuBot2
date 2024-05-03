@@ -7,7 +7,7 @@ from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.adapters.onebot.v11.message import MessageSegment
 from nonebot.log import logger
 from configs.path_config import TEMP_PATH
-from utils.msg_util import template_to_image, upload_for_shamrock
+from utils.msg_util import template_to_image, image
 from utils.permission_checker import auth_manager
 from utils import message_queue
 from configs.config import SUPERUSERS
@@ -175,8 +175,7 @@ async def generate_help_text2img(group_id: int) -> Union[str, Union[MessageSegme
                                 img_name=file,
                                 plugins=plugins_data,
                                 **extra_info)
-        response_msg = await upload_for_shamrock(path, f"{file}.png")
-
+        response_msg = image(abspath=f"{path}{file}.png")
     return response_msg
 
 

@@ -6,7 +6,7 @@ from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message, MessageSegment
 
 from configs.path_config import TEMP_PATH
-from utils.msg_util import text, upload_for_shamrock
+from utils.msg_util import text, image
 from utils.permission_checker import auth_manager
 from utils import message_queue
 
@@ -58,7 +58,7 @@ async def get_picture() -> MessageSegment:
         filename = f"animation_{int(datetime.datetime.now().timestamp())}_{random.randint(0, 100000)}.jpg"
         with open(path + filename, "wb") as f:
             f.write(pic_res.content)
-        msg = await(upload_for_shamrock(path, filename))
+        msg = image(abspath=f"{path}{filename}")
     except Exception as e:
         logger.error(f"获取图片失败：{e}")
         msg = text("获取图片失败")

@@ -16,6 +16,7 @@ __command_description__ = {
     "test": "测试"
 }
 
+from utils.msg_util import image
 # __default_permission__ = True
 # __default_permission__ = ["1234567"]
 
@@ -31,4 +32,5 @@ Test = on_fullmatch("test",
 @Test.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
     logger.debug(event.original_message)
+    # await bot.send(event, image(abspath="D:\\GITHUB\\GuGuBot2\\temp\\temp.png"))
     await Test.finish()

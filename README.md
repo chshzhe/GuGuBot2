@@ -5,6 +5,18 @@
 
 ## 部署方法
 
+
+<Details>
+<Summary>👍Lagrange.Core</Summary>
+
+[文档](https://lagrangedev.github.io/Lagrange.Doc/Lagrange.OneBot/Config/)
+
+</Details>  
+
+
+<Details>
+<Summary>🤏Shamrock</Summary>
+
 ### 配置Shamrock（类似go-cqhttp的作用）
 
 > 考虑到 MuMu12 模拟器对 `Magisk` 和 `LSPosed` 暂时[还不支持](https://forum.libfekit.so/d/60-mumu12mo-ni-qi-an-zhuang-magiskhe-lsposed/3)，此处展示基于 `LSPatch` 的配置方案。
@@ -72,7 +84,10 @@
    [INFO] websockets | handshake:642| connection open
    [DEBUG] on_bot_connect | _:10| 已连接到BOT
    ```
-   
+</Details>  
+
+
+
 ## 注意事项
 
 1. 环境变量 `.env` 文件中的 `fastapi_reload` 需要为 `false`，群插件会加载两次，导致加群验证有概率会发送两遍报错
