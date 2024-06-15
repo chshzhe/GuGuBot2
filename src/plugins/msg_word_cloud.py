@@ -37,7 +37,7 @@ __default_permission_cn__ = {
     "wcsub": "词云订阅"
 }
 __command_description__ = {
-    "wc": """生成本群昨日词云：-wc\n生成指定用户近三天词云：-wc <QQ号>\n生成自己的词云：-wcme""",
+    "wc": """生成本群昨日词云：-wc\n生成指定用户近三天词云：-wc [QQ号]\n生成自己的词云：-wcme""",
     "wcsub": "词云订阅：-wcsub"
 }
 MsgWordCloud = on_command("-wc",
