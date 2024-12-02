@@ -1,6 +1,6 @@
 from typing import Dict, List
 import httpx
-import lxml
+import lxml  # requirement need this
 from bs4 import BeautifulSoup
 from nonebot import on_startswith
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
@@ -8,8 +8,8 @@ from nonebot import get_bot
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 from nonebot.typing import T_State
-from configs.config import PREVIEW_GROUP
-from utils.send_queue import message_queue
+from utils.permission_checker import auth_manager
+from utils import message_queue
 
 news_list = []
 
@@ -25,7 +25,25 @@ __plugin_usage__ = f"""订阅教务处通知
 -jwc help: 打开帮助,
 """
 
-Jwc_message = on_startswith(("-jwc",), permission=GROUP, priority=17)
+__plugin_cmd_name__ = "jwc"
+
+__default_permission__ = {
+    "jwc": True,
+    "jwcsub": False
+}
+__default_permission_cn__ = {
+    "jwc": "教务处通知查询",
+    "jwcsub": "教务处通知订阅"
+}
+__command_description__ = {
+    "jwc": """获取教务处通知：-jwc""",
+    "jwcsub": "教务处通知订阅：-jwcsub"
+}
+Jwc_message = on_startswith(("-jwc",),
+                            rule=auth_manager.get_rule(f"jwc", "jwc"),
+                            permission=GROUP,
+                            priority=17
+                            )
 
 
 @Jwc_message.handle()
@@ -54,18 +72,17 @@ async def check_update():
         return
     if not fetched_news:
         return
-    for news in news_list:
+    for news in fetched_news:
         if not _url_match(news, news_list):
             news_list.append(news)
             logger.info(f"检测到通知：{news['title']}")
             news_msg = f"{news['title']}\n{news['description']}\n{news['link']}"
             bot = get_bot()
-            for group in PREVIEW_GROUP:
+            send_group = auth_manager.get_plugin_cmd_list("jwc", "jwcsub", True)
+            for group in send_group:
                 message_queue.put((Message(news_msg), group, bot, "group"))
                 logger.debug(f"进入群发队列：{news_msg}")
                 logger.info(f"群{group}，自动发送教务处通知推送")
-                message_queue.put((Message(f"群{group}教务处通知推送"), 1299946476, bot, "private"))
-                logger.debug(f"进入队列：个人测试")
 
 
 def _url_match(new: dict, cache: list) -> bool:

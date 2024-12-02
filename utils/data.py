@@ -1,6 +1,5 @@
 import json
 
-from nonebot.log import logger
 from typing import List
 
 from configs.path_config import TEXT_PATH

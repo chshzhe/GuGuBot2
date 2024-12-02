@@ -1,30 +1,36 @@
-from nonebot import on_message
+from nonebot import on_fullmatch
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
 from nonebot.log import logger
-from configs.config import BOT_NAME
 
-__plugin_name__ = "接个龙龙"
+__plugin_name__ = "测试"
 __plugin_usage__ = f"""什么逆天功能~
-早安/晚安：来自{BOT_NAME}的问候
+114514
 """
+__plugin_cmd_name__ = "test"
 
-Test = on_message(
-    permission=GROUP,
-    priority=1,
-    block=False
-)
+__default_permission__ = {
+    "test": True
+}
+__command_description__ = {
+    "test": "测试"
+}
+
+from utils.msg_util import image
+# __default_permission__ = True
+# __default_permission__ = ["1234567"]
+
+from utils.permission_checker import auth_manager
+
+Test = on_fullmatch("test",
+                    permission=auth_manager.get_permission("test", "test"),
+                    priority=1,
+                    block=False
+                    )
 
 
 @Test.handle()
 async def handle_receive(bot: Bot, event: MessageEvent, state: T_State):
     logger.debug(event.original_message)
-    # logger.debug(event.raw_message)
-    # logger.debug(event.message)
-    # logger.debug(event.message_id)
-    # logger.debug(event.message_type)
-    # logger.debug(event.sub_type)
-    # logger.debug(event.time)
-    # logger.debug(event.user_id)
-    # logger.debug(event)
+    # await bot.send(event, image(abspath="D:\\GITHUB\\GuGuBot2\\temp\\temp.png"))
     await Test.finish()

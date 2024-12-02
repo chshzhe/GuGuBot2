@@ -3,15 +3,23 @@ import httpx
 from nonebot import on_startswith, logger
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GROUP, Bot, MessageEvent, Message
-from utils.send_queue import message_queue
+from utils.permission_checker import auth_manager
+from utils import message_queue
 
 __plugin_name__ = "对联"
 __plugin_usage__ = f"""咕咕给您生成对联
 对联 <上联>：生成对应的下联
 对对联 <上联>：随机生成对应的下联
 """
+__plugin_cmd_name__ = "couplet"
 
-Couplet = on_startswith(("对联 ", "对对联 "), permission=GROUP, priority=15)
+__default_permission__ = False
+__command_description__ = "生成对联：对联 <上联>\n随机生成对联：对对联 <上联>"
+Couplet = on_startswith(("对联 ", "对对联 "),
+                        rule=auth_manager.get_rule(f"{__plugin_cmd_name__}"),
+                        permission=GROUP,
+                        priority=15
+                        )
 
 url_base = 'https://seq2seq-couplet-model.rssbrain.com/v0.2/couplet/'
 

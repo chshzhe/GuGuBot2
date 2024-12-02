@@ -1,14 +1,35 @@
 import sys
+from typing import TYPE_CHECKING
 
-from nonebot.log import logger
+from nonebot import get_driver
+
+if TYPE_CHECKING:
+    from loguru import Logger, Record
+from nonebot.log import logger, logger_id
 from configs.config import INFO_LOG_TIME, DEBUG_LOG_TIME, ERROR_LOG_TIME, WARNING_LOG_TIME
 from configs.path_config import LOG_PATH
 
+driver = get_driver()
 
+
+def custom_filter(record: "Record"):
+    # 排除info级别的日志
+    log_level = record["extra"].get("nonebot_log_level", "INFO")
+    levelno = logger.level(log_level).no if isinstance(log_level, str) else log_level
+    flag1 = record["level"].no >= levelno
+    if record["function"] in ['_run_matcher', 'simple_run']:
+        flag2 = False
+    else:
+        flag2 = True
+    return flag1 and flag2
+
+
+@driver.on_startup
 async def init_bot_startup():
     logger.remove()
     special_format: str = (
-        "<g>{time:%m-%d %H:%M:%S.%f}</g> "
+        # "<g>{time:%m-%d %H:%M:%S.%f}</g> "
+        "<g>{time:MM-DD HH:mm:ss}</g> "
         "[<lvl>{level}</lvl>] "
         "<c><u>{name}</u></c> | "
         "<c>{function}:{line}</c>| "
@@ -16,10 +37,10 @@ async def init_bot_startup():
     )
     logger.add(
         sys.stdout,
-        level="DEBUG",
+        level=0,
         format=special_format,
+        filter=custom_filter
     )
-
     custom_format = (
         "<g>{time:YYYY-MM-DD HH:mm:ss}</g> " "[{level}] " "{name} | " "{message}"
     )
@@ -65,11 +86,14 @@ async def init_bot_startup():
     #     rotation="00:00",
     #     filter=lambda record: "数据库" in record['message']
     #                           or "Database" in record['message']
-    #                           or "db" in record['message'],
+    #                           or "msg_db" in record['message'],
     #     format=custom_format,
     #     encoding="utf-8",
     # )
 
+    logger.info("Bot started.")
 
+
+@driver.on_shutdown
 async def shutdown():
-    pass
+    logger.info("Shutting down...")
