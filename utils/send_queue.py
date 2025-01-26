@@ -3,7 +3,7 @@ from queue import Queue
 
 from nonebot import logger
 from nonebot.adapters.onebot.v11 import Event
-
+from random import random
 
 class MessageQueue:
     def __init__(self):
@@ -17,7 +17,6 @@ class MessageQueue:
                     if not args:
                         _response = await bot.send(event, message)
                         logger.success(f"发送消息：{message}")
-                        # Todo: 测试返回值情况
                         if not (isinstance(_response,dict) and _response.keys() == {"message_id", "time"}):
                             logger.warning(f"发送消息返回|\033[31m{_response}\033[0m")
                     else:
@@ -44,10 +43,10 @@ class MessageQueue:
                         logger.error(f"发送消息失败：未知的event类型，{message, event, bot, args}")
                 else:
                     logger.error(f"发送消息失败：未知的event类型，{message, event, bot, args}")
-                await asyncio.sleep(1.5)
+                await asyncio.sleep(1+random())
             except Exception as e:
                 logger.error(f"发送消息失败,{e}")
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1+random())
 
     async def message_sender(self):
         while True:
@@ -83,7 +82,7 @@ class RequestQueue:
                         logger.warning(f"出现报错|\033[31m{_response}\033[0m")
             except Exception as e:
                 logger.error(f"发送消息失败,{e}")
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1+random())
 
     async def request_sender(self):
         while True:
@@ -91,7 +90,7 @@ class RequestQueue:
             if not self.request_queue.empty():
                 await self._send_request()
             else:
-                await asyncio.sleep(1)
+                await asyncio.sleep(1+random())
 
     def put(self, *args):
         logger.debug(f"request_queue put: {args}")

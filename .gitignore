@@ -1,0 +1,7 @@
+/database/
+/temp/
+/venv/
+/log/
+/.idea/
+/src/resource/text/verify/
+/configs/permission.json

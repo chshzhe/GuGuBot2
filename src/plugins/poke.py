@@ -47,7 +47,8 @@ async def handle_receive(bot: Bot, event: Event, state: T_State):
         # message = Message(f"[CQ:shake, id={event.user_id}]")    #go-cqhttp
         # message = Message(f"[CQ:poke,type=1,id={event.user_id}]")     #Shamrock
         # message = Message(f"[CQ:touch,id={event.user_id}]")  # Shamrock
-        await bot.call_api("group_poke",group_id = event.group_id,user_id= event.user_id)
+        await bot.call_api("group_poke",group_id = event.group_id,user_id= event.user_id) #Lagrange.Onebot
+        # message = "稳定性测试中：本功能暂时关闭"
         
     if message:
         message_queue.put((Message(message), event, bot))
