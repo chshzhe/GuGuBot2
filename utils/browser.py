@@ -19,6 +19,7 @@ async def start_browser():
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # 无头模式，没有界面打开浏览器
     options.add_argument('--disable-gpu')  # 禁用GPU加速，某些情况下需要
+    options.add_argument('--no-sandbox')  # 无沙盒模式，Ubuntu下需要
     _browser = webdriver.Chrome(options=options)
     logger.info("selenium已初始化")
 
